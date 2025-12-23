@@ -1,0 +1,18 @@
+{
+  "slug": "intro-to-leetcode",
+  "title": "Introduction to LeetCode",
+  "description": "Master the fundamentals of coding interviews with focused LeetCode practice",
+  "goal": "Ace Technical Interviews",
+  "lessons": [
+    {
+      "slug": "why-leetcode",
+      "title": "Why LeetCode Matters",
+      "file": "lesson-1.md"
+    },
+    {
+      "slug": "array-basics",
+      "title": "Array Fundamentals",
+      "file": "lesson-2.md"
+    }
+  ]
+}

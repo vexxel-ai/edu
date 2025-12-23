@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: vexxel_edu_db
+    environment:
+      POSTGRES_USER: vexxel
+      POSTGRES_PASSWORD: vexxel123
+      POSTGRES_DB: vexxel_edu
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vexxel -d vexxel_edu"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Application
+  web:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vexxel_edu_web
+    environment:
+      DATABASE_URL: postgresql://vexxel:vexxel123@db:5432/vexxel_edu
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - ./content:/app/content
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:

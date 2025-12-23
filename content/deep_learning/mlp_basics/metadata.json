@@ -1,0 +1,64 @@
+{
+  "title": "Multi-Layer Perceptron Fundamentals",
+  "slug": "mlp-basics",
+  "description": "Learn the fundamentals of Multi-Layer Perceptrons including forward propagation, backpropagation, and activation functions",
+  "content_type": "deep_learning",
+  "difficulty": "intermediate",
+  "estimated_time": "45 minutes",
+  "tags": ["neural-networks", "mlp", "forward-propagation", "backpropagation"],
+
+  "pdf": {
+    "filename": "mlp_notes.pdf",
+    "path": "/static/content/deep_learning/mlp_basics/mlp_notes.pdf",
+    "pages": 10
+  },
+
+  "learning_objectives": [
+    "Understand the structure of a Multi-Layer Perceptron",
+    "See how data flows through neural network layers",
+    "Learn how activation functions transform neuron outputs",
+    "Visualize the forward propagation algorithm step-by-step",
+    "Understand backpropagation and gradient descent"
+  ],
+
+  "visualizations": {
+    "mlp_forward": {
+      "name": "MLP Forward Propagation",
+      "type": "mlp_forward",
+      "linked_pages": [3, 4],
+      "config": {
+        "layers": [3, 4, 2],
+        "activation": "relu",
+        "inputData": [0.5, 0.8, 0.3],
+        "speed": 1000
+      }
+    },
+    "mlp_backprop": {
+      "name": "MLP Backpropagation",
+      "type": "mlp_backprop",
+      "linked_pages": [7, 8],
+      "config": {
+        "layers": [3, 4, 2],
+        "learning_rate": 0.01,
+        "show_gradients": true
+      }
+    },
+    "activation_functions": {
+      "name": "Activation Functions Comparison",
+      "type": "activation_comparison",
+      "linked_pages": [5],
+      "config": {
+        "functions": ["relu", "sigmoid", "tanh", "leaky_relu"]
+      }
+    }
+  },
+
+  "page_mappings": {
+    "1": "mlp_forward",
+    "3": "mlp_forward",
+    "4": "mlp_forward",
+    "5": "activation_functions",
+    "7": "mlp_backprop",
+    "8": "mlp_backprop"
+  }
+}

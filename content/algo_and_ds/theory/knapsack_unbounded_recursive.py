@@ -1,3 +1,5 @@
+# Unbounded Knapsack Problem
+
 def unbounded_knapsack_recursive(capacity, weights, profits):
     def get_max_profit(remaining_capacity, idx, memo):
         # --- 1. Base Case: No items left to consider ---
@@ -16,19 +18,17 @@ def unbounded_knapsack_recursive(capacity, weights, profits):
 
         # Choice 1: Exclude the current item (Go to next item, same capacity)
         # This is always a valid move.
-        profit_exclude = get_max_profit(remaining_capacity, idx + 1, memo)
+        max_profit = get_max_profit(remaining_capacity, idx + 1, memo)
 
         # Choice 2: Include the current item (Only if it fits)
-        profit_include = 0
-
         if remaining_capacity >= current_weight:
             # If we include the item, the profit is:
             # Current profit + (Max profit from the remaining capacity and the CURRENT item list).
             # We call 'idx' again to allow for multiple uses of this item.
             profit_include = current_profit + get_max_profit(remaining_capacity - current_weight, idx, memo)
 
-        # The result is the maximum of excluding the item or including it.
-        max_profit = max(profit_exclude, profit_include)
+            # The result is the maximum of excluding the item or including it.
+            max_profit = max(max_profit, profit_include)
 
         # --- 4. Store and Return ---
         memo[state_key] = max_profit

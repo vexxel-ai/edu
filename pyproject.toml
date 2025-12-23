@@ -1,0 +1,26 @@
+[project]
+name = "edu"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "alembic>=1.17.1",
+    "fastapi[standard]>=0.121.1",
+    "graphviz>=0.21",
+    "markdown>=3.10",
+    "matplotlib>=3.10.7",
+    "pydantic-settings>=2.12.0",
+    "pytest>=9.0.0",
+    "sqlalchemy>=2.0.44",
+    "sqlmodel>=0.0.27",
+    "supabase>=2.24.0",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration tests requiring external services (deselect with '-m \"not integration\"')",
+    "manual: marks tests that require manual intervention (e.g., clicking email links)",
+]
+# By default, skip integration and manual tests
+addopts = "-m 'not integration and not manual'"
