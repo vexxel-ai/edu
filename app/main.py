@@ -101,13 +101,13 @@ def get_sections_with_subsections(session: Session) -> list[dict]:
 
 def sort_media_assets(assets: list[MediaAsset]) -> dict[str, list[MediaAsset]]:
     """Sort media assets by type and order."""
-    sorted_assets = {"slides": [], "images": [], "youtube": [], "blog_links": []}
+    sorted_assets = {"slides": [], "notes": [], "youtube": [], "blog_links": []}
 
     for asset in sorted(assets, key=lambda x: x.order):
         if asset.type == MediaType.SLIDE:
             sorted_assets["slides"].append(asset)
         elif asset.type == MediaType.IMAGE:
-            sorted_assets["images"].append(asset)
+            sorted_assets["notes"].append(asset)
         elif asset.type == MediaType.YOUTUBE:
             sorted_assets["youtube"].append(asset)
         elif asset.type == MediaType.BLOG_LINK:
@@ -271,7 +271,7 @@ async def module_detail(slug: str, request: Request, session: Session = Depends(
             "post_tags": post_tags,
             "breadcrumbs": breadcrumbs,
             "slides": sorted_assets["slides"],
-            "images": sorted_assets["images"],
+            "notes": sorted_assets["notes"],
             "youtube_videos": sorted_assets["youtube"],
             "blog_links": sorted_assets["blog_links"],
             "description_html": description_html,

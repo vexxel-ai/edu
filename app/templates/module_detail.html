@@ -57,7 +57,7 @@
     </header>
 
     <!-- Content Wrapper -->
-    <div class="content-wrapper layout-horizontal relative w-full p-0" id="contentWrapper">
+    <div class="content-wrapper {% if notes or slides %}layout-horizontal{% endif %} relative w-full p-0" id="contentWrapper">
         <!-- Exit Fullscreen Button (only visible in fullscreen) -->
         <button class="exit-fullscreen-btn fixed top-10 right-10 z-[1000] w-11 h-11 hidden items-center justify-center bg-bg-card border-2 border-border rounded-full cursor-pointer text-text-primary shadow-lg" id="exitFullscreenBtn" title="Exit Fullscreen (ESC)" onclick="toggleFullscreen()">
             <svg viewBox="0 0 24 24" fill="currentColor" class="w-[22px] h-[22px]">
@@ -66,13 +66,13 @@
         </button>
 
         <!-- Content Grid -->
-        <div class="content-grid" id="contentGrid">
+        <div class="content-grid {% if not notes and not slides %}content-centered{% endif %}" id="contentGrid">
 
         <!-- STUDIO LAYOUT: Left Panel (Visual Content) -->
         <div class="left-panel bg-bg-primary border-r border-border p-0" id="studioLeftPanel" style="display: none;">
             <!-- Vertical Tab Switcher (on left edge) -->
             <div class="vertical-tab-switcher">
-                {% if images %}
+                {% if notes %}
                 <button class="vertical-tab-btn active" data-tab="notes" onclick="switchStudioTab('notes')" title="Handwritten Notes">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="vertical-tab-icon">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
@@ -80,7 +80,7 @@
                 </button>
                 {% endif %}
                 {% if slides %}
-                <button class="vertical-tab-btn {% if not images %}active{% endif %}" data-tab="slides" onclick="switchStudioTab('slides')" title="Slides">
+                <button class="vertical-tab-btn {% if not notes %}active{% endif %}" data-tab="slides" onclick="switchStudioTab('slides')" title="Slides">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="vertical-tab-icon">
                         <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
                     </svg>
@@ -89,7 +89,7 @@
             </div>
 
             <!-- Notes Tab Content -->
-            {% if images %}
+            {% if notes %}
             <div class="studio-tab-content active" id="studio-tab-notes">
                 <div class="immersive-slide-viewer">
                     <!-- Main Slide Container (full height) -->
@@ -110,10 +110,10 @@
                         </button>
 
                         <!-- Slide Images -->
-                        {% for image in images %}
+                        {% for note in notes %}
                         <img
-                            src="{{ image.url }}"
-                            alt="{{ image.title or 'Note ' ~ loop.index }}"
+                            src="{{ note.url }}"
+                            alt="{{ note.title or 'Note ' ~ loop.index }}"
                             class="slide-image {% if loop.index == 1 %}active{% endif %}"
                             data-slide="{{ loop.index }}"
                         >
@@ -121,7 +121,7 @@
 
                         <!-- Corner Counter -->
                         <div class="corner-counter">
-                            <span id="currentSlide">1</span>/<span id="totalSlides">{{ images|length }}</span>
+                            <span id="currentSlide">1</span>/<span id="totalSlides">{{ notes|length }}</span>
                         </div>
                     </div>
                 </div>
@@ -130,7 +130,7 @@
 
             <!-- Slides Tab Content (Google Slides) -->
             {% if slides %}
-            <div class="studio-tab-content {% if not images %}active{% endif %}" id="studio-tab-slides">
+            <div class="studio-tab-content {% if not notes %}active{% endif %}" id="studio-tab-slides">
                 <div class="slides-scroll-container">
                     {% for slide in slides %}
                     <div class="bg-bg-card border border-border rounded-custom p-6 mb-6">
@@ -225,16 +225,16 @@
         <!-- Order: Notes → Slides → Interactive → Description → References -->
 
         <!-- 1. Handwritten Notes (PRIORITY) -->
-        {% if images %}
+        {% if notes %}
         <section class="section active" id="section-notes" data-section-id="notes">
             <h2 class="section-title" data-lang-key="notes">Handwritten Notes</h2>
             <div class="slide-viewer">
                 <div class="slide-container" id="slideContainer2">
                     <div class="magnifier" id="magnifier2"></div>
-                    {% for image in images %}
+                    {% for note in notes %}
                     <img
-                        src="{{ image.url }}"
-                        alt="{{ image.title or 'Note ' ~ loop.index }}"
+                        src="{{ note.url }}"
+                        alt="{{ note.title or 'Note ' ~ loop.index }}"
                         class="slide-image {% if loop.index == 1 %}active{% endif %}"
                         data-slide="{{ loop.index }}"
                     >
@@ -243,7 +243,7 @@
                 <div class="slide-controls">
                     <button class="slide-btn" onclick="prevSlide()" id="prevBtn2">← Previous</button>
                     <span class="slide-counter">
-                        <span id="currentSlide2">1</span> / <span id="totalSlides2">{{ images|length }}</span>
+                        <span id="currentSlide2">1</span> / <span id="totalSlides2">{{ notes|length }}</span>
                     </span>
                     <button class="slide-btn" onclick="nextSlide()" id="nextBtn2">Next →</button>
                 </div>
@@ -350,11 +350,11 @@
     </div>
 </div>
 
-{% if images %}
+{% if notes %}
 <script>
     // Initialize slide viewer with correct total
     document.addEventListener('DOMContentLoaded', () => {
-        initSlideViewer({{ images|length }});
+        initSlideViewer({{ notes|length }});
     });
 </script>
 {% endif %}

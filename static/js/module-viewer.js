@@ -15,18 +15,11 @@ function initLayout() {
 
     if (!wrapper || !contentGrid) return;
 
-    // Always use horizontal split view
-    wrapper.className = 'content-wrapper layout-horizontal';
-
     // Get all main content sections
     const sections = contentGrid.querySelectorAll('.section:not([id*="-studio"])');
 
-    // Check if we have notes or slides - look for vertical tab switcher or immersive viewer
-    const hasNotesOrSlides = studioLeftPanel && (
-        studioLeftPanel.querySelector('.vertical-tab-switcher') ||
-        studioLeftPanel.querySelector('.immersive-slide-viewer') ||
-        studioLeftPanel.querySelector('.slides-scroll-container')
-    );
+    // Check if wrapper has layout-horizontal class (set by template based on notes/slides presence)
+    const hasNotesOrSlides = wrapper.classList.contains('layout-horizontal');
 
     if (hasNotesOrSlides && studioLeftPanel && studioRightPanel) {
         // Split view: Notes/Slides | HTML Content
@@ -36,16 +29,14 @@ function initLayout() {
         sections.forEach(section => {
             section.style.display = 'none';
         });
-    } else if (studioRightPanel) {
-        // No notes/slides - show only HTML content (right panel)
+    } else {
+        // No notes/slides - centered layout
         if (studioLeftPanel) studioLeftPanel.style.display = 'none';
-        studioRightPanel.style.display = 'block';
-        // Hide main sections
+        if (studioRightPanel) studioRightPanel.style.display = 'none';
+        // Show main sections
         sections.forEach(section => {
-            section.style.display = 'none';
+            section.style.display = 'block';
         });
-        // Adjust grid to single column
-        contentGrid.style.gridTemplateColumns = '1fr';
     }
 }
 

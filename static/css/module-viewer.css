@@ -641,3 +641,90 @@
     height: calc(100vh - 80px) !important;
     min-height: calc(100vh - 80px) !important;
 }
+
+/* ============================================
+   CENTERED LAYOUT (Markdown-only posts)
+============================================ */
+
+/* When there's no media, center the markdown content */
+.content-grid.content-centered {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.content-grid.content-centered .section {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem 3rem;
+}
+
+.content-grid.content-centered .markdown-content {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+}
+
+.content-grid.content-centered .markdown-content h1 {
+    font-size: 2.25rem;
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.content-grid.content-centered .markdown-content h2 {
+    font-size: 1.875rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.content-grid.content-centered .markdown-content h3 {
+    font-size: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.content-grid.content-centered .markdown-content p {
+    margin-bottom: 1.25rem;
+}
+
+.content-grid.content-centered .markdown-content pre {
+    margin: 1.5rem 0;
+    border-radius: var(--radius);
+}
+
+.content-grid.content-centered .markdown-content table {
+    margin: 1.5rem 0;
+}
+
+@media (max-width: 768px) {
+    .content-grid.content-centered .section {
+        padding: 1.5rem 1.5rem;
+    }
+
+    .content-grid.content-centered .markdown-content {
+        font-size: 1rem;
+    }
+
+    .content-grid.content-centered .markdown-content h1 {
+        font-size: 1.875rem;
+    }
+
+    .content-grid.content-centered .markdown-content h2 {
+        font-size: 1.5rem;
+    }
+
+    .content-grid.content-centered .markdown-content h3 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Hide studio panels when content is centered */
+.content-grid.content-centered .left-panel,
+.content-grid.content-centered .right-panel {
+    display: none !important;
+}
+
+/* Make sure main section is visible and properly displayed */
+.content-grid.content-centered #section-description {
+    display: block !important;
+}
