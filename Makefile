@@ -57,24 +57,24 @@ db-shell: ## Open PostgreSQL shell
 
 db-setup: ## Run initial database setup
 	@echo "Running initial database setup..."
-	docker-compose run --rm app uv run python migrations_scripts/initial_setup.py
+	docker-compose exec app uv run python migrations_scripts/initial_setup.py
 
 db-reset: ## Reset database (WARNING: deletes all data)
 	@echo "⚠️  This will delete all data!"
 	@read -p "Type 'yes' to continue: " confirm; \
 	if [ "$$confirm" = "yes" ]; then \
-		docker-compose run --rm app uv run python migrations_scripts/initial_setup.py; \
+		docker-compose exec app uv run python migrations_scripts/initial_setup.py; \
 	else \
 		echo "Cancelled"; \
 	fi
 
 seed: ## Seed database with sample data
 	@echo "🌱 Seeding database with sample data..."
-	docker-compose run --rm app uv run python seed.py
+	docker-compose exec app uv run python seed.py
 	@echo "✓ Database seeded successfully!"
 
 test: ## Run tests
-	docker-compose run --rm app uv run pytest
+	docker-compose exec app uv run pytest
 
 format: ## Format code with ruff
 	docker-compose run --rm app uv run ruff format .

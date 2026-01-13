@@ -1,9 +1,8 @@
 import os
-from typing import Generator
+from collections.abc import Generator
 from pathlib import Path
 
 from sqlmodel import Session, SQLModel, create_engine
-
 
 # Get database URL from environment or default to SQLite
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -22,7 +21,7 @@ if is_sqlite:
     engine = create_engine(
         DATABASE_URL,
         echo=False,  # Set to True for SQL query debugging
-        connect_args={"check_same_thread": False}  # Needed for SQLite
+        connect_args={"check_same_thread": False},  # Needed for SQLite
     )
 else:
     # PostgreSQL configuration

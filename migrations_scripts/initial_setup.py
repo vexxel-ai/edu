@@ -14,21 +14,18 @@ Run this once when setting up the project for the first time.
 
 import os
 import sys
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from sqlmodel import Session, select, text
+from sqlmodel import Session, select
 
 from app.auth.supabase_client import get_supabase_client, settings
 from app.database import engine
 from app.models import (
     PendingTag,
-    Post,
     SQLModel,
-    Tag,
     TagActivity,
     User,
     UserRole,
