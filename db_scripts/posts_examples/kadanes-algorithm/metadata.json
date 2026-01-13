@@ -7,19 +7,19 @@
   "media_assets": [
     {
       "type": "image",
-      "url": "/migrations_scripts/posts_examples/example_notes/example_0.jpg",
+      "url": "/static/media/posts/kadanes-algorithm/example_0.jpg",
       "title": "Kadane's Algorithm - Page 1",
       "order": 1
     },
     {
       "type": "image",
-      "url": "/migrations_scripts/posts_examples/example_notes/example_1.jpg",
+      "url": "/static/media/posts/kadanes-algorithm/example_1.jpg",
       "title": "Kadane's Algorithm - Page 2",
       "order": 2
     },
     {
       "type": "image",
-      "url": "/migrations_scripts/posts_examples/example_notes/example_2.jpg",
+      "url": "/static/media/posts/kadanes-algorithm/example_2.jpg",
       "title": "Kadane's Algorithm - Page 3",
       "order": 3
     }
