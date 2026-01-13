@@ -13,7 +13,7 @@ from sqlmodel import Session, func, select
 from app.auth.dependencies import require_admin
 from app.auth.utils import get_user_stats
 from app.database import get_session
-from app.models import PendingTag, Post, User, UserRole
+from app.models import PendingSection, PendingSubsection, Post, User, UserRole
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -31,7 +31,7 @@ class UserListResponse(BaseModel):
     is_active: bool
     created_at: str
     post_count: int
-    pending_tag_count: int
+    pending_request_count: int
 
 
 class UserDetailResponse(BaseModel):
@@ -141,13 +141,23 @@ async def list_users(
             select(func.count()).where(Post.author_id == u.id)
         ).one()
 
-        # Count pending tags
-        pending_tag_count = session.exec(
+        # Count pending sections
+        pending_section_count = session.exec(
             select(func.count()).where(
-                PendingTag.requested_by_id == u.id,
-                PendingTag.status == "pending",
+                PendingSection.requested_by_id == u.id,
+                PendingSection.status == "pending",
             )
         ).one()
+
+        # Count pending subsections
+        pending_subsection_count = session.exec(
+            select(func.count()).where(
+                PendingSubsection.requested_by_id == u.id,
+                PendingSubsection.status == "pending",
+            )
+        ).one()
+
+        pending_request_count = pending_section_count + pending_subsection_count
 
         user_responses.append(
             UserListResponse(
@@ -158,7 +168,7 @@ async def list_users(
                 is_active=u.is_active,
                 created_at=u.created_at.isoformat(),
                 post_count=post_count,
-                pending_tag_count=pending_tag_count,
+                pending_request_count=pending_request_count,
             )
         )
 

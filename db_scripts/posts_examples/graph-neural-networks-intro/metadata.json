@@ -1,0 +1,33 @@
+{
+  "title": "Graph Neural Networks: An Introduction",
+  "slug": "graph-neural-networks-intro",
+  "section": "deep-learning",
+  "subsection": "graph-neural-networks",
+  "tags": ["neural-networks", "theory"],
+  "media_assets": [
+    {
+      "type": "image",
+      "url": "/migrations_scripts/posts_examples/example_notes/example_0.jpg",
+      "title": "GNN Notes - Page 1",
+      "order": 1
+    },
+    {
+      "type": "image",
+      "url": "/migrations_scripts/posts_examples/example_notes/example_1.jpg",
+      "title": "GNN Notes - Page 2",
+      "order": 2
+    },
+    {
+      "type": "image",
+      "url": "/migrations_scripts/posts_examples/example_notes/example_2.jpg",
+      "title": "GNN Notes - Page 3",
+      "order": 3
+    },
+    {
+      "type": "slide",
+      "url": "https://docs.google.com/presentation/d/e/2PACX-1vSvQDVBesLdaM8BoM-hzFyfWgzphBYNd2RETlC5Di71PNZJ64LzywW5bb7djM91tc8l1D3jW1fOI95P/embed?start=false&loop=false&delayms=3000",
+      "title": "Graph Deep Learning Slides",
+      "order": 4
+    }
+  ]
+}

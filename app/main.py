@@ -3,7 +3,7 @@ Main FastAPI application for edu.vexxel.ai
 
 Provides:
 - Public routes for browsing modules and content
-- Admin CMS integration
+- Section/Subsection based organization
 - HTMX-powered filtering
 """
 
@@ -20,8 +20,8 @@ from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 
 from app.database import create_db_and_tables, get_session
-from app.models import MediaAsset, MediaType, Post, PostTag, Tag
-from app.routers import analytics, auth, tags, users
+from app.models import MediaAsset, MediaType, Post, PostTag, Section, Subsection, Tag
+from app.routers import auth, sections, tags, users
 
 # Configure logging
 logging.basicConfig(
@@ -67,9 +67,9 @@ app = FastAPI(
 
 # Include routers
 app.include_router(auth.router)
+app.include_router(sections.router)
 app.include_router(tags.router)
 app.include_router(users.router)
-app.include_router(analytics.router)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -81,25 +81,27 @@ templates = Jinja2Templates(directory="app/templates")
 # ==================== Helper Functions ====================
 
 
-def get_hierarchical_tags(session: Session) -> list[dict]:
-    """Get tags organized hierarchically."""
-    root_tags = session.exec(select(Tag).where(Tag.parent_id.is_(None)).order_by(Tag.name)).all()
+def get_sections_with_subsections(session: Session) -> list[dict]:
+    """Get sections with their subsections organized hierarchically."""
+    sections = session.exec(select(Section).order_by(Section.name)).all()
 
-    hierarchical = []
-    for root_tag in root_tags:
-        # Get children
-        children = session.exec(
-            select(Tag).where(Tag.parent_id == root_tag.id).order_by(Tag.name)
+    result = []
+    for section in sections:
+        # Get subsections for this section
+        subsections = session.exec(
+            select(Subsection)
+            .where(Subsection.section_id == section.id)
+            .order_by(Subsection.name)
         ).all()
 
-        hierarchical.append({"tag": root_tag, "children": children})
+        result.append({"section": section, "subsections": subsections})
 
-    return hierarchical
+    return result
 
 
 def sort_media_assets(assets: list[MediaAsset]) -> dict[str, list[MediaAsset]]:
     """Sort media assets by type and order."""
-    sorted_assets = {"slides": [], "images": [], "youtube": [], "blog_links": [], "html": []}
+    sorted_assets = {"slides": [], "images": [], "youtube": [], "blog_links": []}
 
     for asset in sorted(assets, key=lambda x: x.order):
         if asset.type == MediaType.SLIDE:
@@ -110,8 +112,6 @@ def sort_media_assets(assets: list[MediaAsset]) -> dict[str, list[MediaAsset]]:
             sorted_assets["youtube"].append(asset)
         elif asset.type == MediaType.BLOG_LINK:
             sorted_assets["blog_links"].append(asset)
-        elif asset.type == MediaType.HTML:
-            sorted_assets["html"].append(asset)
 
     return sorted_assets
 
@@ -144,39 +144,51 @@ async def homepage(request: Request, session: Session = Depends(get_session)):
 
 @app.get("/modules", response_class=HTMLResponse)
 async def modules_page(
-    request: Request, tag_id: Optional[int] = None, session: Session = Depends(get_session)
+    request: Request,
+    section_id: Optional[int] = None,
+    subsection_id: Optional[int] = None,
+    session: Session = Depends(get_session),
 ):
     """
-    All modules page with tag sidebar and module grid.
+    All modules page with section/subsection sidebar and module grid.
 
-    Supports filtering by tag via query parameter.
+    Supports filtering by section or subsection via query parameters.
     """
-    # Get hierarchical tags for sidebar
-    hierarchical_tags = get_hierarchical_tags(session)
+    # Get sections with subsections for sidebar
+    sections_hierarchy = get_sections_with_subsections(session)
 
-    # Get posts (filtered by tag if provided)
-    if tag_id:
-        # Get posts associated with this tag
-        post_tags = session.exec(select(PostTag).where(PostTag.tag_id == tag_id)).all()
-        post_ids = [pt.post_id for pt in post_tags]
+    # Get posts (filtered if needed)
+    selected_section = None
+    selected_subsection = None
 
+    if subsection_id:
+        # Filter by subsection (most specific)
         posts = session.exec(
-            select(Post).where(Post.id.in_(post_ids)).order_by(Post.created_at.desc())
+            select(Post)
+            .where(Post.subsection_id == subsection_id)
+            .order_by(Post.created_at.desc())
         ).all()
-
-        selected_tag = session.get(Tag, tag_id)
+        selected_subsection = session.get(Subsection, subsection_id)
+        if selected_subsection:
+            selected_section = session.get(Section, selected_subsection.section_id)
+    elif section_id:
+        # Filter by section
+        posts = session.exec(
+            select(Post).where(Post.section_id == section_id).order_by(Post.created_at.desc())
+        ).all()
+        selected_section = session.get(Section, section_id)
     else:
         # Get all posts
         posts = session.exec(select(Post).order_by(Post.created_at.desc())).all()
-        selected_tag = None
 
     return templates.TemplateResponse(
         "modules.html",
         {
             "request": request,
             "posts": posts,
-            "hierarchical_tags": hierarchical_tags,
-            "selected_tag": selected_tag,
+            "sections_hierarchy": sections_hierarchy,
+            "selected_section": selected_section,
+            "selected_subsection": selected_subsection,
         },
     )
 
@@ -191,7 +203,6 @@ async def module_detail(slug: str, request: Request, session: Session = Depends(
     - TikTok-style scroll for images (if present)
     - YouTube videos (if present)
     - Blog links (if present)
-    - Custom HTML (if present)
     - Markdown description (always)
     """
     # Get post by slug
@@ -200,53 +211,25 @@ async def module_detail(slug: str, request: Request, session: Session = Depends(
     if not post:
         return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
 
-    # Get post tags (optimized to avoid N+1 queries)
+    # Get section and subsection (required)
+    section = session.get(Section, post.section_id)
+    subsection = session.get(Subsection, post.subsection_id)
+
+    # Get optional tags
     post_tag_relations = session.exec(select(PostTag).where(PostTag.post_id == post.id)).all()
     tag_ids = [pt.tag_id for pt in post_tag_relations]
     post_tags = []
     if tag_ids:
         post_tags = list(session.exec(select(Tag).where(Tag.id.in_(tag_ids))).all())
 
-    # Build breadcrumb hierarchy from the most specific (deepest) tag
-    breadcrumb_tags = []
-    if post_tags:
-        # Find the deepest tag (one with a parent)
-        deepest_tag = None
-        for tag in post_tags:
-            if tag.parent_id:
-                deepest_tag = tag
-                break
-
-        # If no child tag found, use the first root tag
-        if not deepest_tag and post_tags:
-            deepest_tag = post_tags[0]
-
-        # Build hierarchy from deepest to root
-        if deepest_tag:
-            current = deepest_tag
-            breadcrumb_tags.insert(0, current)
-            while current.parent_id:
-                parent = session.get(Tag, current.parent_id)
-                if parent:
-                    breadcrumb_tags.insert(0, parent)
-                    current = parent
-                else:
-                    break
-
-    # Extract subtopic from title (e.g., "An Introduction" from "GNN: An Introduction")
-    post_subtopic = post.title
-    if ":" in post.title:
-        # Use the part after the colon, stripped
-        post_subtopic = post.title.split(":", 1)[1].strip()
-    elif post_tags:
-        # If no colon, check if title contains the tag name
-        for tag in post_tags:
-            if tag.name in post.title:
-                # Remove the tag name from the title for the subtopic
-                post_subtopic = post.title.replace(tag.name, "").strip()
-                # Remove leading/trailing punctuation
-                post_subtopic = post_subtopic.strip(": -")
-                break
+    # Build breadcrumb (Section > Subsection > Post)
+    breadcrumbs = []
+    if section:
+        breadcrumbs.append({"name": section.name, "url": f"/modules?section_id={section.id}"})
+    if subsection:
+        breadcrumbs.append(
+            {"name": subsection.name, "url": f"/modules?subsection_id={subsection.id}"}
+        )
 
     # Sort media assets by type
     sorted_assets = sort_media_assets(post.media_assets)
@@ -259,14 +242,14 @@ async def module_detail(slug: str, request: Request, session: Session = Depends(
         {
             "request": request,
             "post": post,
+            "section": section,
+            "subsection": subsection,
             "post_tags": post_tags,
-            "breadcrumb_tags": breadcrumb_tags,
-            "post_subtopic": post_subtopic,
+            "breadcrumbs": breadcrumbs,
             "slides": sorted_assets["slides"],
             "images": sorted_assets["images"],
             "youtube_videos": sorted_assets["youtube"],
             "blog_links": sorted_assets["blog_links"],
-            "html_content": sorted_assets["html"],
             "description_html": description_html,
         },
     )
@@ -274,32 +257,47 @@ async def module_detail(slug: str, request: Request, session: Session = Depends(
 
 @app.get("/api/modules", response_class=HTMLResponse)
 async def filter_modules(
-    request: Request, tag_id: Optional[int] = None, session: Session = Depends(get_session)
+    request: Request,
+    section_id: Optional[int] = None,
+    subsection_id: Optional[int] = None,
+    session: Session = Depends(get_session),
 ):
     """
-    HTMX endpoint for filtering modules by tag.
+    HTMX endpoint for filtering modules by section/subsection.
 
     Returns HTML partial with filtered posts and title.
     """
-    selected_tag = None
+    selected_section = None
+    selected_subsection = None
 
-    if tag_id:
-        # Get posts associated with this tag
-        post_tags = session.exec(select(PostTag).where(PostTag.tag_id == tag_id)).all()
-        post_ids = [pt.post_id for pt in post_tags]
-
+    if subsection_id:
+        # Filter by subsection
         posts = session.exec(
-            select(Post).where(Post.id.in_(post_ids)).order_by(Post.created_at.desc())
+            select(Post)
+            .where(Post.subsection_id == subsection_id)
+            .order_by(Post.created_at.desc())
         ).all()
-
-        selected_tag = session.get(Tag, tag_id)
+        selected_subsection = session.get(Subsection, subsection_id)
+        if selected_subsection:
+            selected_section = session.get(Section, selected_subsection.section_id)
+    elif section_id:
+        # Filter by section
+        posts = session.exec(
+            select(Post).where(Post.section_id == section_id).order_by(Post.created_at.desc())
+        ).all()
+        selected_section = session.get(Section, section_id)
     else:
         # Get all posts
         posts = session.exec(select(Post).order_by(Post.created_at.desc())).all()
 
     return templates.TemplateResponse(
         "partials/module_content.html",
-        {"request": request, "posts": posts, "selected_tag": selected_tag},
+        {
+            "request": request,
+            "posts": posts,
+            "selected_section": selected_section,
+            "selected_subsection": selected_subsection,
+        },
     )
 
 

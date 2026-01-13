@@ -23,13 +23,7 @@ from sqlmodel import Session, select
 
 from app.auth.supabase_client import get_supabase_client, settings
 from app.database import engine
-from app.models import (
-    PendingTag,
-    SQLModel,
-    TagActivity,
-    User,
-    UserRole,
-)
+from app.models import Section, SQLModel, Subsection, User, UserRole
 
 
 def reset_database():
@@ -43,12 +37,13 @@ def reset_database():
     print("✓ All tables created successfully")
 
 
-def create_super_admin(session: Session) -> User:
+def create_super_admin(session: Session, skip_supabase: bool = False) -> User:
     """
     Create super admin user in both Supabase and local database.
 
     Args:
         session: Database session
+        skip_supabase: If True, skip Supabase creation (use placeholder ID)
 
     Returns:
         Created super admin user
@@ -60,54 +55,94 @@ def create_super_admin(session: Session) -> User:
         select(User).where(User.email == settings.super_admin_email)
     ).first()
     if existing_user:
-        print(f"✓ Super admin already exists with ID: {existing_user.id}")
+        print(f"✓ Super admin already exists in local DB with ID: {existing_user.id}")
         return existing_user
 
-    try:
-        # Create user in Supabase Auth
-        supabase = get_supabase_client()
-        print("  - Creating user in Supabase...")
+    supabase_user_id = None
 
-        auth_response = supabase.auth.admin.create_user(
-            {
-                "email": settings.super_admin_email,
-                "password": settings.super_admin_password,
-                "email_confirm": True,  # Auto-confirm email
-            }
-        )
+    if not skip_supabase:
+        try:
+            supabase = get_supabase_client()
 
-        if not auth_response.user:
-            raise Exception("Failed to create user in Supabase")
+            # Try to create user in Supabase Auth
+            print("  - Creating user in Supabase...")
+            try:
+                auth_response = supabase.auth.admin.create_user(
+                    {
+                        "email": settings.super_admin_email,
+                        "password": settings.super_admin_password,
+                        "email_confirm": True,  # Auto-confirm email
+                    }
+                )
 
-        print(f"  - Supabase user created with ID: {auth_response.user.id}")
+                if not auth_response.user:
+                    raise Exception("Failed to create user in Supabase")
 
-        # Create user in local database
-        user = User(
-            supabase_id=auth_response.user.id,
-            email=settings.super_admin_email,
-            full_name="Super Administrator",
-            role=UserRole.ADMIN,
-            is_active=True,
-        )
-        session.add(user)
-        session.commit()
-        session.refresh(user)
+                supabase_user_id = auth_response.user.id
+                print(f"  - Supabase user created with ID: {supabase_user_id}")
 
-        print(f"✓ Super admin created successfully with ID: {user.id}")
-        print(f"  Email: {user.email}")
+            except Exception as e:
+                error_msg = str(e)
+                if "already been registered" in error_msg or "already exists" in error_msg:
+                    # User exists in Supabase, try to fetch it
+                    print("  - User already exists in Supabase, fetching...")
+                    try:
+                        # List users and find by email
+                        users_response = supabase.auth.admin.list_users()
+                        for user_data in users_response:
+                            if hasattr(user_data, 'email') and user_data.email == settings.super_admin_email:
+                                supabase_user_id = user_data.id
+                                print(f"  - Found existing Supabase user with ID: {supabase_user_id}")
+                                break
+
+                        if not supabase_user_id:
+                            raise Exception("User exists in Supabase but couldn't fetch user ID")
+
+                    except Exception as fetch_error:
+                        print(f"✗ Failed to fetch existing Supabase user: {str(fetch_error)}")
+                        raise
+                else:
+                    raise
+
+        except Exception as e:
+            print(f"\n⚠️  Supabase connection failed: {str(e)}")
+            print("  Falling back to local-only mode...")
+            skip_supabase = True
+
+    # Create user in local database
+    if not supabase_user_id:
+        # Generate placeholder ID for local development
+        import uuid
+        supabase_user_id = str(uuid.uuid4())
+        print(f"  - Using placeholder Supabase ID: {supabase_user_id}")
+        print("  ⚠️  You'll need to sync with real Supabase user later!")
+
+    user = User(
+        supabase_id=supabase_user_id,
+        email=settings.super_admin_email,
+        full_name="Super Administrator",
+        role=UserRole.ADMIN,
+        is_active=True,
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    # Get environment info for logging
+    environment = os.getenv("ENVIRONMENT", "development")
+    supabase_url = os.getenv("SUPABASE_URL", "")
+    supabase_project_id = supabase_url.split("//")[1].split(".")[0] if supabase_url else "unknown"
+
+    print(f"✓ Super admin created in local DB with ID: {user.id}")
+    print(f"  Email: {user.email}")
+    print(f"  Supabase ID: {user.supabase_id}")
+    print(f"  Environment: {environment.upper()}")
+    print(f"  Supabase Project: {supabase_project_id}")
+    if not skip_supabase:
         print(f"  Password: {settings.super_admin_password}")
-        print("  ⚠️  IMPORTANT: Change this password in production!")
+    print("  ⚠️  IMPORTANT: Change this password in production!")
 
-        return user
-
-    except Exception as e:
-        print(f"✗ Failed to create super admin: {str(e)}")
-        print("\nTroubleshooting:")
-        print("1. Check that Supabase credentials in .env are correct")
-        print("2. Verify Supabase project is active")
-        print("3. Check that SUPABASE_JWT_SECRET matches your Supabase project settings")
-        print("4. For manual creation, use Supabase dashboard and sync to local DB")
-        raise
+    return user
 
 
 def verify_migration(session: Session):
@@ -139,16 +174,16 @@ def verify_migration(session: Session):
         errors.append(f"User table error: {str(e)}")
 
     try:
-        session.exec(select(PendingTag)).first()
-        print("✓ PendingTag table accessible")
+        session.exec(select(Section)).first()
+        print("✓ Section table accessible")
     except Exception as e:
-        errors.append(f"PendingTag table error: {str(e)}")
+        errors.append(f"Section table error: {str(e)}")
 
     try:
-        session.exec(select(TagActivity)).first()
-        print("✓ TagActivity table accessible")
+        session.exec(select(Subsection)).first()
+        print("✓ Subsection table accessible")
     except Exception as e:
-        errors.append(f"TagActivity table error: {str(e)}")
+        errors.append(f"Subsection table error: {str(e)}")
 
     if errors:
         print("\n✗ Setup verification failed:")
@@ -165,6 +200,15 @@ def main():
     print("=" * 60)
     print("Initial Database Setup")
     print("=" * 60)
+
+    # Show current environment
+    environment = os.getenv("ENVIRONMENT", "development")
+    supabase_url = os.getenv("SUPABASE_URL", "")
+    supabase_project_id = supabase_url.split("//")[1].split(".")[0] if supabase_url else "unknown"
+
+    print(f"\n📍 Environment: {environment.upper()}")
+    print(f"🔗 Supabase Project: {supabase_project_id}")
+    print(f"🌐 Supabase URL: {supabase_url}")
 
     # Check environment variables
     print("\nChecking environment variables...")
