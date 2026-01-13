@@ -20,7 +20,7 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from sqlmodel import Session, create_engine, select, text
+from sqlmodel import Session, select, text
 
 from app.auth.supabase_client import get_supabase_client, settings
 from app.database import engine
@@ -108,13 +108,9 @@ def create_super_admin(session: Session) -> User:
         print("\nTroubleshooting:")
         print("1. Check that Supabase credentials in .env are correct")
         print("2. Verify Supabase project is active")
-        print(
-            "3. Check that SUPABASE_JWT_SECRET matches your Supabase project settings"
-        )
+        print("3. Check that SUPABASE_JWT_SECRET matches your Supabase project settings")
         print("4. For manual creation, use Supabase dashboard and sync to local DB")
         raise
-
-
 
 
 def verify_migration(session: Session):
@@ -175,17 +171,17 @@ def main():
 
     # Check environment variables
     print("\nChecking environment variables...")
-    required_vars = ["SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_JWT_SECRET"]
+    required_vars = ["SUPABASE_URL", "SUPABASE_API_KEY", "SUPABASE_JWT_SECRET"]
     missing_vars = [var for var in required_vars if not os.getenv(var)]
 
     if missing_vars:
         print(f"\n✗ Missing required environment variables: {', '.join(missing_vars)}")
         print("\nPlease set these in your .env file:")
         print("  SUPABASE_URL=https://your-project.supabase.co")
-        print("  SUPABASE_ANON_KEY=your-anon-key")
+        print("  SUPABASE_API_KEY=your-api-key")
         print("  SUPABASE_JWT_SECRET=your-jwt-secret")
         print("\nYou can find these in your Supabase project settings:")
-        print("  https://app.supabase.com/project/_/settings/api")
+        print("  https://supabase.com/dashboard/project/_/settings/api")
         sys.exit(1)
 
     print("✓ Environment variables found")

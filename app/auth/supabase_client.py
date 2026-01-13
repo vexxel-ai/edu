@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "sqlite:///./database.db"
 
+    # Environment
+    environment: str = "development"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
