@@ -1,0 +1,41 @@
+<!-- Minimalist Module Cards -->
+{% if posts %}
+    {% for post in posts %}
+    <a href="/modules/{{ post.slug }}" class="block bg-bg-card border border-border rounded-custom p-5 no-underline transition-colors hover:border-accent">
+
+        <!-- Title -->
+        <h3 class="text-base font-semibold text-text-primary mb-3 leading-snug">
+            {{ post.title }}
+        </h3>
+
+        <!-- Description -->
+        {% if post.description %}
+        <p class="text-sm text-text-secondary leading-relaxed mb-4 line-clamp-2 overflow-hidden">
+            {{ post.description[:150]|replace('#', '')|replace('*', '')|replace('`', '') }}{% if post.description|length > 150 %}...{% endif %}
+        </p>
+        {% endif %}
+
+        <!-- Meta -->
+        <div class="flex items-center justify-between pt-3 border-t border-border">
+            <div class="flex gap-3 text-xs text-text-tertiary">
+                {% set slides_count = post.media_assets|selectattr('type', 'equalto', 'slide')|list|length %}
+                {% set images_count = post.media_assets|selectattr('type', 'equalto', 'image')|list|length %}
+                {% set youtube_count = post.media_assets|selectattr('type', 'equalto', 'youtube')|list|length %}
+
+                {% if slides_count > 0 %}<span>{{ slides_count }}S</span>{% endif %}
+                {% if images_count > 0 %}<span>{{ images_count }}I</span>{% endif %}
+                {% if youtube_count > 0 %}<span>{{ youtube_count }}V</span>{% endif %}
+            </div>
+
+            <span class="text-xs text-text-tertiary">
+                {{ post.updated_at.strftime('%b %d') }}
+            </span>
+        </div>
+    </a>
+    {% endfor %}
+{% else %}
+<div class="text-center py-16 px-8 text-text-tertiary">
+    <div class="text-4xl mb-4">∅</div>
+    <p class="text-sm" data-lang-key="no_modules">No modules found</p>
+</div>
+{% endif %}

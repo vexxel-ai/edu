@@ -1,0 +1,16 @@
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-xl font-semibold text-text-primary m-0">
+        {% if selected_tag %}
+            {{ selected_tag.name }}
+        {% else %}
+            <span data-lang-key="all_modules">All Modules</span>
+        {% endif %}
+    </h2>
+    <span class="text-sm text-text-tertiary">
+        {{ posts|length }}
+    </span>
+</div>
+
+<div id="module-grid" class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
+    {% include 'partials/module_list.html' %}
+</div>

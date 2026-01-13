@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}edu.vexxel.ai{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-12 md:py-20 px-4 md:px-8 text-center border-b border-border">
+    <h1 class="text-4xl md:text-5xl font-bold text-text-primary mb-4 leading-tight" data-lang-key="hero_title">
+        Your Personal Learning Hub
+    </h1>
+    <p class="text-base md:text-lg text-text-secondary leading-relaxed max-w-2xl mx-auto mb-8" data-lang-key="hero_description">
+        Organize your study notes, courses, and learning resources in one place. From handwritten notes to video lectures, everything you need to master new skills.
+    </p>
+    <a href="/modules" class="hero-cta inline-block px-6 py-3.5 bg-accent text-white no-underline rounded-custom font-semibold text-[15px]" data-lang-key="hero_cta">
+        Explore Modules
+    </a>
+</section>
+
+<!-- Featured Modules -->
+<div class="max-w-5xl mx-auto px-4 py-12">
+    {% if posts and posts|length > 0 %}
+    <section>
+        <h2 class="text-xl md:text-2xl font-semibold text-text-primary mb-6" data-lang-key="featured_title">Featured Modules</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for post in posts %}
+            <a href="/modules/{{ post.slug }}" class="featured-card bg-bg-card border border-border rounded-custom p-6 mb-6 no-underline block">
+                {% if loop.index == 1 %}
+                <span class="featured-badge inline-block px-3 py-1 bg-accent text-white text-xs font-semibold rounded-full uppercase tracking-wider mb-4" data-lang-key="featured_badge">Top Pick</span>
+                {% endif %}
+                <h3 class="text-xl font-semibold text-text-primary mb-2 leading-snug">
+                    {{ post.title }}
+                </h3>
+                {% if post.description %}
+                <p class="text-[15px] text-text-secondary leading-relaxed mb-4">
+                    {{ post.description[:200]|replace('#', '')|replace('*', '')|replace('`', '') }}{% if post.description|length > 200 %}...{% endif %}
+                </p>
+                {% endif %}
+                <div class="flex gap-4 text-xs text-text-tertiary">
+                    {% set slides_count = post.media_assets|selectattr('type', 'equalto', 'slide')|list|length %}
+                    {% set images_count = post.media_assets|selectattr('type', 'equalto', 'image')|list|length %}
+                    {% set youtube_count = post.media_assets|selectattr('type', 'equalto', 'youtube')|list|length %}
+
+                    {% if slides_count > 0 %}<span>📊 {{ slides_count }} <span data-lang-key="slides">Slides</span></span>{% endif %}
+                    {% if images_count > 0 %}<span>📝 {{ images_count }} <span data-lang-key="notes">Notes</span></span>{% endif %}
+                    {% if youtube_count > 0 %}<span>🎥 {{ youtube_count }} <span data-lang-key="videos">Videos</span></span>{% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <div class="text-center">
+            <a href="/modules" class="view-all-link inline-block mt-8 px-5 py-3 bg-bg-secondary text-text-primary no-underline rounded-custom border border-border font-medium text-[15px]" data-lang-key="view_all_modules">
+                View All Modules →
+            </a>
+        </div>
+    </section>
+    {% else %}
+    <div class="text-center py-16 px-8 text-text-tertiary">
+        <div class="text-4xl mb-4">∅</div>
+        <p class="text-sm" data-lang-key="no_modules">No modules found</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

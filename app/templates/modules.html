@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}All Modules - edu.vexxel.ai{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="py-8 md:py-12 px-4 md:px-8 border-b border-border bg-bg-card">
+    <h1 class="text-3xl md:text-4xl font-bold text-text-primary mb-2 leading-tight" data-lang-key="all_modules_title">
+        All Modules
+    </h1>
+    <p class="text-[15px] md:text-base text-text-secondary leading-relaxed" data-lang-key="all_modules_description">
+        Browse all learning modules by topic or tag
+    </p>
+</section>
+
+<!-- Main Content -->
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Mobile: Tag Filter Toggle -->
+    <button class="filter-toggle block w-full px-3 py-3 bg-bg-secondary border border-border rounded-custom text-text-primary font-medium text-sm text-left cursor-pointer mb-4" onclick="toggleFilters()">
+        <span data-lang-key="filter_by_tag">Filter by Tag</span> ▼
+    </button>
+
+    <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-8">
+        <!-- Sidebar (Hidden on mobile, sticky on desktop) -->
+        <aside class="order-2 md:order-1">
+            <div class="filter-panel bg-bg-card border border-border rounded-custom p-4 mb-6" id="filterPanel">
+                <div class="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-4" data-lang-key="tags_label">Tags</div>
+
+                <!-- All modules -->
+                <a href="/modules?tag_id="
+                   hx-get="/api/modules"
+                   hx-target="#module-content"
+                   hx-swap="innerHTML"
+                   class="tag-link block px-2 py-2 mb-1 {% if not selected_tag %}text-accent bg-bg-secondary{% else %}text-text-secondary{% endif %} no-underline text-sm rounded-custom"
+                   data-lang-key="all_modules">
+                    All Modules
+                </a>
+
+                <div class="h-px bg-border my-3"></div>
+
+                <!-- Tag tree -->
+                {% for item in hierarchical_tags %}
+                <div class="mb-2">
+                    <a href="/modules?tag_id={{ item.tag.id }}"
+                       hx-get="/api/modules?tag_id={{ item.tag.id }}"
+                       hx-target="#module-content"
+                       hx-swap="innerHTML"
+                       class="tag-link block px-2 py-2 {% if selected_tag and selected_tag.id == item.tag.id %}text-accent bg-bg-secondary{% else %}text-text-primary{% endif %} no-underline text-sm font-medium rounded-custom">
+                        {{ item.tag.name }}
+                    </a>
+
+                    {% if item.children %}
+                    <div class="ml-4 mt-1">
+                        {% for child in item.children %}
+                        <a href="/modules?tag_id={{ child.id }}"
+                           hx-get="/api/modules?tag_id={{ child.id }}"
+                           hx-target="#module-content"
+                           hx-swap="innerHTML"
+                           class="tag-link block px-2 py-1.5 {% if selected_tag and selected_tag.id == child.id %}text-accent bg-bg-secondary{% else %}text-text-secondary{% endif %} no-underline text-[13px] rounded-custom">
+                            {{ child.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="order-1 md:order-2" id="module-content">
+            {% include 'partials/module_content.html' %}
+        </main>
+    </div>
+</div>
+{% endblock %}

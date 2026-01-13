@@ -1,0 +1,333 @@
+/**
+ * Component Styles
+ * Reusable UI components: navigation, buttons, cards, modals, tags
+ */
+
+/* ============================================
+   NAVIGATION
+============================================ */
+
+[data-style="terminal"] nav {
+    border-bottom-width: 2px;
+}
+
+[data-style="terminal"] .nav-logo {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.nav-link {
+    transition: color 0.2s;
+}
+
+.nav-link:hover {
+    color: var(--text-primary);
+}
+
+/* ============================================
+   SETTINGS BUTTON & MODAL
+============================================ */
+
+.settings-btn {
+    transition: all 0.2s;
+}
+
+.settings-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--accent);
+}
+
+.settings-option {
+    transition: all 0.2s;
+}
+
+.settings-option:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+
+.settings-option.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+/* ============================================
+   BUTTONS
+============================================ */
+
+.hero-cta {
+    transition: background 0.2s;
+}
+
+.hero-cta:hover {
+    background: var(--accent-hover);
+}
+
+.view-all-link {
+    transition: all 0.2s;
+}
+
+.view-all-link:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+/* Focus Mode Toggle Button */
+.focus-mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.focus-mode-toggle:hover {
+    background: var(--bg-card);
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+
+.focus-mode-toggle.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
+.focus-mode-label {
+    color: inherit;
+    transition: color 0.2s;
+}
+
+.focus-mode-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+.focus-mode-icon {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.2s;
+}
+
+.focus-mode-toggle:hover .focus-mode-icon {
+    transform: scale(1.1);
+}
+
+.focus-mode-kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.25rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+.focus-mode-toggle:hover .focus-mode-kbd {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-color: var(--accent);
+}
+
+.focus-mode-toggle.active .focus-mode-kbd {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+/* Terminal style adjustments */
+[data-style="terminal"] .focus-mode-kbd {
+    border-radius: 0;
+}
+
+/* ============================================
+   CARDS
+============================================ */
+
+.featured-card {
+    transition: border-color 0.2s;
+}
+
+.featured-card:hover {
+    border-color: var(--accent);
+}
+
+[data-style="terminal"] .featured-badge {
+    border-radius: var(--radius);
+}
+
+/* ============================================
+   TAGS & BADGES
+============================================ */
+
+.tag-badge {
+    transition: all 0.2s;
+}
+
+.tag-badge:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.tag-link {
+    transition: all 0.2s;
+}
+
+.tag-link:hover {
+    background: var(--bg-secondary);
+}
+
+/* ============================================
+   BREADCRUMB
+============================================ */
+
+.breadcrumb a {
+    transition: color 0.2s;
+}
+
+.breadcrumb a:hover {
+    color: var(--text-primary);
+}
+
+/* ============================================
+   FILTERS (Mobile & Desktop)
+============================================ */
+
+.filter-toggle:hover {
+    border-color: var(--accent);
+}
+
+.filter-panel {
+    display: none;
+}
+
+.filter-panel.open {
+    display: block;
+}
+
+@media (min-width: 768px) {
+    .filter-toggle {
+        display: none !important;
+    }
+    .filter-panel {
+        display: block !important;
+        position: sticky;
+        top: 72px;
+    }
+}
+
+/* ============================================
+   REFERENCES
+============================================ */
+
+.reference-item {
+    display: block;
+    padding: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    text-decoration: none;
+    transition: border-color 0.2s;
+}
+
+.reference-item:hover {
+    border-color: var(--accent);
+}
+
+.reference-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.reference-url {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+    word-break: break-all;
+}
+
+.reference-type {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================
+   YOUTUBE EMBEDS
+============================================ */
+
+.youtube-embed {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    margin-bottom: 1rem;
+}
+
+.youtube-embed iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: var(--radius);
+}
+
+/* ============================================
+   CONTENT CARDS
+============================================ */
+
+.content-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ============================================
+   SECTION TITLES
+============================================ */
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .module-title {
+        font-size: 2.5rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+}

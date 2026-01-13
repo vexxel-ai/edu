@@ -1,24 +1,166 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>edu.vexxel</title>
-    <link href="{{ url_for('static', path='css/output.css') }}" rel="stylesheet">
-    <script type="text/javascript" src="{{ url_for('static', path='js/htmx.min.js') }}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}edu.vexxel.ai{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bg-primary': 'var(--bg-primary)',
+                        'bg-secondary': 'var(--bg-secondary)',
+                        'bg-card': 'var(--bg-card)',
+                        'text-primary': 'var(--text-primary)',
+                        'text-secondary': 'var(--text-secondary)',
+                        'text-tertiary': 'var(--text-tertiary)',
+                        'accent': 'var(--accent)',
+                        'accent-hover': 'var(--accent-hover)',
+                        'border': 'var(--border)',
+                    },
+                    fontFamily: {
+                        'body': 'var(--font-body)',
+                    },
+                    borderRadius: {
+                        'custom': 'var(--radius)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+
+    <!-- Custom Stylesheets -->
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
-<main>
-    <nav class="bg-custom-red">
-        <a href="/"
-           class="inline-block p-4 text-custom-powder-light font-dancing-script text-2xl"
-        >
-            My parties
-        </a>
+    <!-- Navigation -->
+    <nav class="bg-bg-card border-b border-border sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+            <a href="/" class="nav-logo text-[15px] md:text-base font-semibold text-text-primary no-underline tracking-tight">
+                <span data-lang-key="platform_name">edu.vexxel.ai</span>
+            </a>
+
+            <div class="flex items-center gap-4 md:gap-8">
+                <a href="/" class="nav-link text-sm text-text-secondary no-underline" data-lang-key="nav_home">Home</a>
+                <a href="/modules" class="nav-link text-sm text-text-secondary no-underline" data-lang-key="nav_modules">Modules</a>
+                <a href="/admin" class="nav-link text-sm text-text-secondary no-underline" data-lang-key="nav_admin">Admin</a>
+                <button class="settings-btn w-8 h-8 flex items-center justify-center bg-transparent border border-border rounded-custom text-text-secondary cursor-pointer" onclick="toggleSettings()" title="Settings">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/>
+                        <path d="M16.5 10a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"/>
+                        <path d="M10 1.5v2M10 16.5v2M18.5 10h-2M3.5 10h-2M15.5 4.5l-1.4 1.4M5.9 14.1l-1.4 1.4M4.5 4.5l1.4 1.4M14.1 14.1l1.4 1.4"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
     </nav>
-    <main class="container p-5 m-auto">
-        {% block content %}
-        {% endblock %}
+
+    <!-- Settings Modal -->
+    <div class="hidden fixed inset-0 bg-black/50 z-[9999] items-center justify-center" id="settingsModal" style="display: none;" onclick="closeSettingsIfOutside(event)">
+        <div class="bg-bg-card border border-border rounded-custom p-8 max-w-md w-11/12 shadow-lg" style="box-shadow: var(--shadow);" onclick="event.stopPropagation()">
+            <h2 class="text-xl font-semibold mb-6 text-text-primary" data-lang-key="settings_title">Settings</h2>
+
+            <!-- Style Selection -->
+            <div class="mb-6 last:mb-0">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2" data-lang-key="settings_style">Style</label>
+                <div class="flex gap-2">
+                    <div class="settings-option flex-1 px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-style="modern" onclick="setStyle('modern')" data-lang-key="style_modern">
+                        Modern
+                    </div>
+                    <div class="settings-option flex-1 px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-style="terminal" onclick="setStyle('terminal')" data-lang-key="style_terminal">
+                        Terminal
+                    </div>
+                </div>
+            </div>
+
+            <!-- Theme Selection -->
+            <div class="mb-6 last:mb-0">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2" data-lang-key="settings_theme">Theme</label>
+                <div class="flex gap-2">
+                    <div class="settings-option flex-1 px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-theme="light" onclick="setTheme('light')" data-lang-key="theme_light">
+                        Light
+                    </div>
+                    <div class="settings-option flex-1 px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-theme="dark" onclick="setTheme('dark')" data-lang-key="theme_dark">
+                        Dark
+                    </div>
+                </div>
+            </div>
+
+            <!-- Language Selection -->
+            <div class="mb-6 last:mb-0">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2" data-lang-key="settings_language">Language</label>
+                <div class="flex gap-2">
+                    <div class="settings-option flex-1 px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-lang="en" onclick="setLanguage('en')">
+                        English
+                    </div>
+                    <div class="settings-option flex-1 px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-lang="pt-br" onclick="setLanguage('pt-br')">
+                        Português
+                    </div>
+                </div>
+            </div>
+
+            <!-- Close Button -->
+            <button onclick="toggleSettings()" class="w-full mt-6 px-3 py-3 bg-bg-secondary border border-border rounded-custom text-text-primary font-medium cursor-pointer transition-all hover:border-accent" data-lang-key="settings_close">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
     </main>
-</main>
+
+    <!-- Footer -->
+    <footer class="bg-bg-card border-t border-border mt-16 py-8">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex flex-col items-center gap-4">
+                <!-- Social Links -->
+                <div class="flex items-center gap-6">
+                    <a href="https://github.com/vexxel-ai/edu" target="_blank" rel="noopener noreferrer" class="text-text-secondary hover:text-accent transition-colors no-underline" title="GitHub Repository">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+                        </svg>
+                    </a>
+                    <a href="https://x.com/vexxelai" target="_blank" rel="noopener noreferrer" class="text-text-secondary hover:text-accent transition-colors no-underline" title="Twitter/X">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                    </a>
+                </div>
+                <!-- Footer Text -->
+                <p class="text-center text-text-tertiary text-sm">
+                    <span class="cursor" data-lang-key="footer_text">edu.vexxel.ai</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom JavaScript -->
+    <script src="/static/js/i18n.js"></script>
+    <script src="/static/js/theme.js"></script>
+    <script src="/static/js/module-viewer.js"></script>
+
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

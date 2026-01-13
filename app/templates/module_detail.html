@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - edu.vexxel.ai{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="/static/css/module-viewer.css">
+{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-full py-4">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb text-sm text-text-tertiary mb-4 px-8">
+        <a href="/" class="text-text-secondary no-underline" data-lang-key="nav_home">Home</a>
+        <span class="mx-2">/</span>
+        <a href="/modules" class="text-text-secondary no-underline" data-lang-key="nav_modules">Modules</a>
+        {% for tag in breadcrumb_tags %}
+        <span class="mx-2">/</span>
+        <a href="/modules?tag_id={{ tag.id }}" class="text-text-secondary no-underline">{{ tag.name }}</a>
+        {% endfor %}
+        <span class="mx-2">/</span>
+        <span class="text-text-primary">{{ post_subtopic }}</span>
+    </nav>
+
+    <!-- Module Header -->
+    <header class="mb-6 px-8 pb-4 border-b border-border">
+        <h1 class="text-3xl md:text-4xl font-bold text-text-primary mb-4 leading-tight">{{ post.title }}</h1>
+
+        {% if post_tags %}
+        <div class="flex flex-wrap gap-2 mb-4">
+            {% for tag in post_tags %}
+            <a href="/modules?tag_id={{ tag.id }}" class="tag-badge inline-block px-3 py-1.5 bg-bg-secondary border border-border rounded-full text-text-secondary no-underline text-[13px]">
+                {{ tag.name }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="flex items-center justify-between">
+            <p class="text-sm text-text-tertiary">
+                Updated: {{ post.updated_at.strftime('%B %d, %Y') }}
+            </p>
+
+            <!-- Focus Mode Toggle -->
+            <button class="focus-mode-toggle group" id="fullscreenBtn" onclick="toggleFullscreen()">
+                <span class="focus-mode-label">Focus Mode</span>
+                <div class="focus-mode-icon-wrapper">
+                    <svg viewBox="0 0 24 24" class="fullscreen-enter-icon focus-mode-icon">
+                        <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" fill="currentColor"/>
+                    </svg>
+                    <svg viewBox="0 0 24 24" class="fullscreen-exit-icon focus-mode-icon hidden">
+                        <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <kbd class="focus-mode-kbd">F</kbd>
+            </button>
+        </div>
+    </header>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper layout-horizontal relative w-full p-0" id="contentWrapper">
+        <!-- Exit Fullscreen Button (only visible in fullscreen) -->
+        <button class="exit-fullscreen-btn fixed top-10 right-10 z-[1000] w-11 h-11 hidden items-center justify-center bg-bg-card border-2 border-border rounded-full cursor-pointer text-text-primary shadow-lg" id="exitFullscreenBtn" title="Exit Fullscreen (ESC)" onclick="toggleFullscreen()">
+            <svg viewBox="0 0 24 24" fill="currentColor" class="w-[22px] h-[22px]">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+        </button>
+
+        <!-- Content Grid -->
+        <div class="content-grid" id="contentGrid">
+
+        <!-- STUDIO LAYOUT: Left Panel (Visual Content) -->
+        <div class="left-panel bg-bg-primary border-r border-border p-0" id="studioLeftPanel" style="display: none;">
+            <!-- Vertical Tab Switcher (on left edge) -->
+            <div class="vertical-tab-switcher">
+                {% if images %}
+                <button class="vertical-tab-btn active" data-tab="notes" onclick="switchStudioTab('notes')" title="Handwritten Notes">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="vertical-tab-icon">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
+                    </svg>
+                </button>
+                {% endif %}
+                {% if slides %}
+                <button class="vertical-tab-btn {% if not images %}active{% endif %}" data-tab="slides" onclick="switchStudioTab('slides')" title="Slides">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="vertical-tab-icon">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+                    </svg>
+                </button>
+                {% endif %}
+            </div>
+
+            <!-- Notes Tab Content -->
+            {% if images %}
+            <div class="studio-tab-content active" id="studio-tab-notes">
+                <div class="immersive-slide-viewer">
+                    <!-- Main Slide Container (full height) -->
+                    <div class="slide-container-immersive" id="slideContainer">
+                        <div class="magnifier" id="magnifier"></div>
+
+                        <!-- Floating Navigation Arrows -->
+                        <button class="floating-arrow floating-arrow-left" onclick="prevSlide()" id="prevBtnFloating" aria-label="Previous slide">
+                            <svg viewBox="0 0 24 24" fill="currentColor" class="arrow-icon">
+                                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                            </svg>
+                        </button>
+
+                        <button class="floating-arrow floating-arrow-right" onclick="nextSlide()" id="nextBtnFloating" aria-label="Next slide">
+                            <svg viewBox="0 0 24 24" fill="currentColor" class="arrow-icon">
+                                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                            </svg>
+                        </button>
+
+                        <!-- Slide Images -->
+                        {% for image in images %}
+                        <img
+                            src="{{ image.url }}"
+                            alt="{{ image.title or 'Note ' ~ loop.index }}"
+                            class="slide-image {% if loop.index == 1 %}active{% endif %}"
+                            data-slide="{{ loop.index }}"
+                        >
+                        {% endfor %}
+
+                        <!-- Corner Counter -->
+                        <div class="corner-counter">
+                            <span id="currentSlide">1</span>/<span id="totalSlides">{{ images|length }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Slides Tab Content (Google Slides) -->
+            {% if slides %}
+            <div class="studio-tab-content {% if not images %}active{% endif %}" id="studio-tab-slides">
+                <div class="slides-scroll-container">
+                    {% for slide in slides %}
+                    <div class="bg-bg-card border border-border rounded-custom p-6 mb-6">
+                        {% if slide.title %}
+                        <h3 class="font-semibold text-text-primary mb-4">{{ slide.title }}</h3>
+                        {% endif %}
+                        <div class="relative w-full pb-[56.25%]">
+                            <iframe
+                                src="{{ slide.url }}"
+                                frameborder="0"
+                                allowfullscreen="true"
+                                class="absolute top-0 left-0 w-full h-full rounded-custom"
+                            ></iframe>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- STUDIO LAYOUT: Right Panel (Text Content) -->
+        <div class="right-panel overflow-y-auto px-8 py-8" id="studioRightPanel" style="display: none;">
+            <!-- Interactive Content in Studio Right Panel -->
+            {% if html_content %}
+            <section class="mb-12" id="section-interactive-studio">
+                <h2 class="text-xl font-semibold text-text-primary mb-2" data-lang-key="interactive_content">Interactive Content</h2>
+                {% for html in html_content %}
+                <div class="bg-bg-card border border-border rounded-custom p-6 mb-4">
+                    {% if html.title %}
+                    <h3 class="font-semibold text-text-primary mb-4">{{ html.title }}</h3>
+                    {% endif %}
+                    <div>
+                        {{ html.content|safe }}
+                    </div>
+                </div>
+                {% endfor %}
+            </section>
+            {% endif %}
+
+            <!-- Description in Studio Right Panel -->
+            {% if description_html %}
+            <section class="mb-12" id="section-description-studio">
+                <div class="markdown-content">
+                    {{ description_html|safe }}
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- References at bottom of Studio Right Panel -->
+            {% if youtube_videos or blog_links %}
+            <section class="section" id="section-references-studio">
+                <h2 class="section-title" data-lang-key="references">References</h2>
+
+                {% if youtube_videos %}
+                {% for video in youtube_videos %}
+                <div class="content-card">
+                    {% if video.title %}
+                    <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">{{ video.title }}</h3>
+                    {% endif %}
+                    <div class="youtube-embed">
+                        <iframe
+                            src="{{ video.url }}"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                        ></iframe>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                {% if blog_links %}
+                <div style="margin-top: 1rem;">
+                    <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem; font-size: 1.125rem;">
+                        External Resources
+                    </h3>
+                    {% for link in blog_links %}
+                    <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="reference-item">
+                        <span class="reference-type">🔗 Blog</span>
+                        <div class="reference-title">{{ link.title or 'External Resource' }}</div>
+                        <div class="reference-url">{{ link.url }}</div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </section>
+            {% endif %}
+        </div>
+
+        <!-- CONTENT SECTIONS (for Classic, Horizontal, Focus layouts) -->
+        <!-- Order: Notes → Slides → Interactive → Description → References -->
+
+        <!-- 1. Handwritten Notes (PRIORITY) -->
+        {% if images %}
+        <section class="section active" id="section-notes" data-section-id="notes">
+            <h2 class="section-title" data-lang-key="notes">Handwritten Notes</h2>
+            <div class="slide-viewer">
+                <div class="slide-container" id="slideContainer2">
+                    <div class="magnifier" id="magnifier2"></div>
+                    {% for image in images %}
+                    <img
+                        src="{{ image.url }}"
+                        alt="{{ image.title or 'Note ' ~ loop.index }}"
+                        class="slide-image {% if loop.index == 1 %}active{% endif %}"
+                        data-slide="{{ loop.index }}"
+                    >
+                    {% endfor %}
+                </div>
+                <div class="slide-controls">
+                    <button class="slide-btn" onclick="prevSlide()" id="prevBtn2">← Previous</button>
+                    <span class="slide-counter">
+                        <span id="currentSlide2">1</span> / <span id="totalSlides2">{{ images|length }}</span>
+                    </span>
+                    <button class="slide-btn" onclick="nextSlide()" id="nextBtn2">Next →</button>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- 2. Google Slides -->
+        {% if slides %}
+        <section class="section" id="section-slides" data-section-id="slides">
+            <h2 class="section-title" data-lang-key="slides">Slides</h2>
+            {% for slide in slides %}
+            <div class="content-card">
+                {% if slide.title %}
+                <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">{{ slide.title }}</h3>
+                {% endif %}
+                <div style="position: relative; width: 100%; padding-bottom: 56.25%;">
+                    <iframe
+                        src="{{ slide.url }}"
+                        frameborder="0"
+                        allowfullscreen="true"
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: var(--radius);"
+                    ></iframe>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- 3. Custom HTML / Interactive Content -->
+        {% if html_content %}
+        <section class="section" id="section-interactive" data-section-id="interactive">
+            <h2 class="section-title" data-lang-key="interactive_content">Interactive Content</h2>
+            {% for html in html_content %}
+            <div class="content-card">
+                {% if html.title %}
+                <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">{{ html.title }}</h3>
+                {% endif %}
+                <div>
+                    {{ html.content|safe }}
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- 4. Markdown Description -->
+        {% if description_html %}
+        <section class="section" id="section-description" data-section-id="description">
+            <div class="markdown-content">
+                {{ description_html|safe }}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- 5. References (ALWAYS LAST) -->
+        {% if youtube_videos or blog_links %}
+        <section class="section" id="section-references" data-section-id="references">
+            <h2 class="section-title" data-lang-key="references">References</h2>
+
+            {% if youtube_videos %}
+            {% for video in youtube_videos %}
+            <div class="content-card">
+                {% if video.title %}
+                <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">{{ video.title }}</h3>
+                {% endif %}
+                <div class="youtube-embed">
+                    <iframe
+                        src="{{ video.url }}"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                    ></iframe>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% if blog_links %}
+            <div style="margin-top: 1rem;">
+                <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem; font-size: 1.125rem;">
+                    External Resources
+                </h3>
+                {% for link in blog_links %}
+                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="reference-item">
+                    <span class="reference-type">🔗 Blog</span>
+                    <div class="reference-title">{{ link.title or 'External Resource' }}</div>
+                    <div class="reference-url">{{ link.url }}</div>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        </div><!-- /content-grid -->
+    </div><!-- /content-wrapper -->
+
+    <!-- Back Button -->
+    <div class="text-center mt-12">
+        <a href="/modules" class="inline-block px-6 py-3 bg-bg-secondary text-text-primary no-underline rounded-custom border border-border font-medium transition-all hover:bg-accent hover:text-white hover:border-accent">
+            ← <span data-lang-key="back_to_modules">Back to All Modules</span>
+        </a>
+    </div>
+</div>
+
+{% if images %}
+<script>
+    // Initialize slide viewer with correct total
+    document.addEventListener('DOMContentLoaded', () => {
+        initSlideViewer({{ images|length }});
+    });
+</script>
+{% endif %}
+{% endblock %}
