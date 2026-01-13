@@ -34,7 +34,7 @@ A personal knowledge sharing platform for engineering notes. Users browse hierar
 
 ```bash
 # Dependencies
-uv sync 
+uv sync
 
 # Run locally
 uvicorn app.main:app --reload --port 8000
@@ -62,6 +62,16 @@ Four tables with these relationships:
 - `Tag` → self-referential `parent_id` for hierarchy
 
 MediaAsset.type is an enum: `image` | `slide`
+
+Overall every post has the following fields:
+
+1. Markdown explaining the content
+2. Series of images for the notes
+3. Slide URL from google slides
+4. A list of references links (blogs, videos, etc)
+5. A general tag (Deep Learning)
+6. A sub tag (Loss Function)
+7. General tags (many to indicate some other topic like math, curiosity, etc)
 
 ## Key UI Patterns
 
