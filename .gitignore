@@ -18,6 +18,8 @@ uv.lock.backup
 .env
 .env.local
 .env.*.local
+.env.prod
+.env.dev
 
 # IDEs
 .vscode/
@@ -55,3 +57,23 @@ tmp/
 temp/
 *.tmp
 *.bak
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/terraform.tfvars
+terraform/.terraform.tfstate.lock.info
+terraform/crash.log
+terraform/ec2-info.txt
+
+# Docker & Deployment
+postgres-data/
+backups/
+certbot/
+docker-compose.override.yml
+
+# AWS
+*.pem
+*.key

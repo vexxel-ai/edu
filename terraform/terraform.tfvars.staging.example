@@ -1,0 +1,24 @@
+# Staging Environment Configuration
+# Copy to terraform.tfvars.staging
+
+aws_region     = "us-east-1"
+environment    = "staging"
+instance_type  = "t4g.micro"    # Same as prod
+volume_size    = 20
+ssh_key_name   = "edu-vexxel-staging-key"
+project_name   = "edu-vexxel"
+
+# Restrict to your IP
+allowed_ssh_cidr = ["YOUR_IP/32"]
+
+# Staging Supabase project
+supabase_url        = "https://staging-xxxxx.supabase.co"
+supabase_anon_key   = "staging-anon-key"
+supabase_jwt_secret = "staging-jwt-secret"
+
+# Admin credentials
+super_admin_email    = "admin@vexxel.ai"
+super_admin_password = "staging-password"
+
+# Database password
+db_password = "staging-db-password"

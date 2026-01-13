@@ -1,0 +1,24 @@
+# Copy this file to terraform.tfvars and fill in your values
+# DO NOT commit terraform.tfvars to git!
+
+aws_region     = "us-east-1"
+environment    = "prod"
+instance_type  = "t4g.micro"
+volume_size    = 20
+ssh_key_name   = "your-ssh-key-name" # Create this in AWS EC2 Console first
+project_name   = "edu-vexxel"
+
+# Restrict SSH access to your IP for security
+allowed_ssh_cidr = ["your.ip.address/32"]
+
+# Supabase credentials
+supabase_url        = "https://xxxxx.supabase.co"
+supabase_anon_key   = "your-supabase-anon-key"
+supabase_jwt_secret = "your-supabase-jwt-secret"
+
+# Admin credentials
+super_admin_email    = "admin@vexxel.ai"
+super_admin_password = "your-secure-password"
+
+# Database password
+db_password = "your-secure-db-password"

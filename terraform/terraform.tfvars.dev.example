@@ -1,0 +1,24 @@
+# Development Environment Configuration
+# Copy to terraform.tfvars.dev
+
+aws_region     = "us-east-1"
+environment    = "dev"
+instance_type  = "t4g.nano"    # Smaller/cheaper for dev
+volume_size    = 10             # Less storage needed
+ssh_key_name   = "edu-vexxel-dev-key"
+project_name   = "edu-vexxel"
+
+# More relaxed for development
+allowed_ssh_cidr = ["0.0.0.0/0"]
+
+# Dev Supabase project (create separate project for dev)
+supabase_url        = "https://dev-xxxxx.supabase.co"
+supabase_anon_key   = "dev-anon-key"
+supabase_jwt_secret = "dev-jwt-secret"
+
+# Admin credentials
+super_admin_email    = "admin@vexxel.ai"
+super_admin_password = "dev-password"
+
+# Database password
+db_password = "dev-db-password"

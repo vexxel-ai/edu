@@ -1,152 +1,133 @@
 # edu.vexxel.ai
 
-A modern, minimalist learning platform for engineering notes and resources. Browse hierarchical topics, view handwritten notes with an immersive viewer, and access curated learning materials.
-
-## Features
-
-- **Immersive Note Viewer**: Full-screen portrait note viewing with magnification
-- **Hierarchical Topics**: Tag-based organization with nested categories
-- **Multiple Content Types**: Handwritten notes, Google Slides, videos, and blog links
-- **Markdown Support**: Rich content descriptions with syntax highlighting
-- **Theme System**: Modern/Terminal modes with Light/Dark themes
-- **Responsive Design**: Mobile-first approach with TailwindCSS
-- **i18n Ready**: English and Portuguese translations
-
-## Tech Stack
-
-- **Backend**: FastAPI + SQLModel + SQLite
-- **Frontend**: Jinja2 templates + HTMX + TailwindCSS (CDN)
-- **Syntax Highlighting**: highlight.js
-- **Infrastructure**: Docker + docker-compose
+A multi-user learning platform for sharing engineering notes, slides, and educational content.
 
 ## Quick Start
 
-### Using Docker (Recommended)
-
 ```bash
-# Clone the repository
-git clone https://github.com/vexxel-ai/edu.git
-cd edu
-
-# Start with docker-compose
-docker-compose up --build
-
-# Access at http://localhost:8000
+make setup      # Create .env file
+make db-setup   # Initialize database (type SETUP)
+make up         # Start services
 ```
 
-### Local Development
+Visit: **http://localhost:8000/docs**
+
+## Features
+
+- 🔐 Multi-user authentication (Supabase)
+- 👥 Role-based access (Admin, Sub-Admin, User)
+- ✅ Tag approval workflow
+- 📊 Analytics dashboard
+- 🚀 Production-ready (~$21-36/month on AWS)
+
+## Tech Stack
+
+- **Backend**: FastAPI + SQLModel + PostgreSQL
+- **Auth**: Supabase (free tier)
+- **Infrastructure**: Docker + Terraform + AWS
+- **Database**: Local PostgreSQL (dev) / RDS (staging/prod)
+
+## Commands
 
 ```bash
-# Install dependencies with uv
-uv sync
-
-# Seed the database with example content
-uv run python seed.py
-
-# Run the development server
-uvicorn app.main:app --reload --port 8000
-
-# Access at http://localhost:8000
+make help       # Show all commands
+make dev        # Start and follow logs
+make shell      # Open app shell
+make test       # Run tests
+make format     # Format code
+make lint       # Check code style
 ```
+
+## Documentation
+
+- **[Docker Quick Start](docs/DOCKER_QUICKSTART.md)** - Local development
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Deploy to AWS
+- **[API Reference](docs/SETUP_MULTIUSER.md)** - API endpoints
+- **[Architecture](docs/ARCHITECTURE_RDS.md)** - Infrastructure design
+- **[Full Docs Index](docs/README.md)** - All documentation
 
 ## Project Structure
 
 ```
-edu/
-├── app/
-│   ├── main.py              # FastAPI application and routes
-│   ├── models.py            # SQLModel database models
-│   ├── database.py          # Database connection and session
-│   ├── routers/             # Route modules
-│   │   └── admin.py         # Admin CMS routes
-│   └── templates/           # Jinja2 templates
-│       ├── base.html        # Base template with nav/footer
-│       ├── index.html       # Homepage
-│       ├── modules.html     # Module listing page
-│       ├── module_detail.html # Module viewer
-│       ├── admin/           # Admin CMS templates
-│       └── partials/        # HTMX partials
-├── static/
-│   ├── css/                 # Stylesheets
-│   │   ├── base.css         # Theme system and variables
-│   │   ├── components.css   # Reusable UI components
-│   │   └── module-viewer.css # Module viewer layouts
-│   ├── js/                  # JavaScript modules
-│   │   ├── theme.js         # Theme switching logic
-│   │   ├── i18n.js          # Translations
-│   │   └── module-viewer.js # Slide viewer and magnifier
-│   ├── content/             # Static content assets
-│   └── uploads/             # User-uploaded files
-├── seed.py                  # Database seeding script
-├── pyproject.toml           # uv project configuration
-├── requirements.txt         # pip dependencies (generated)
-├── Dockerfile               # Container definition
-└── docker-compose.yml       # Service orchestration
+├── app/                # FastAPI application
+│   ├── main.py
+│   ├── models.py
+│   ├── auth/
+│   └── routers/
+├── migrations/         # Database setup
+├── terraform/          # AWS infrastructure
+├── docs/              # Documentation
+├── docker-compose.yml # Docker setup
+└── Makefile          # Commands
 ```
-
-## Database Models
-
-**Post** - Learning module with title, slug, description (markdown)
-**Tag** - Hierarchical categories (parent_id for nesting)
-**PostTag** - Many-to-many relationship between posts and tags
-**MediaAsset** - Attachments (images, slides, videos, links, HTML)
-
-MediaAsset types: `IMAGE`, `SLIDE`, `YOUTUBE`, `BLOG_LINK`, `HTML`
-
-## Development
-
-### Code Formatting
-
-```bash
-# Format code
-ruff format .
-
-# Lint
-ruff check . --fix
-```
-
-### Adding Content
-
-Edit `seed.py` to add new modules, tags, or media assets, then run:
-
-```bash
-rm -f database.db
-uv run python seed.py
-```
-
-### Admin Panel
-
-Access the CMS at `/admin` to create and manage content via a web interface.
 
 ## Environment Variables
 
-Create a `.env` file (see `.env.example`):
+Required in `.env`:
 
 ```env
-DATABASE_URL=sqlite:///./database.db
-SECRET_KEY=your-secret-key-here
+# Supabase (https://supabase.com)
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_JWT_SECRET=your-jwt-secret
+
+# Admin
+SUPER_ADMIN_EMAIL=admin@vexxel.ai
+SUPER_ADMIN_PASSWORD=change-me
+
+# Database (Docker)
+DB_PASSWORD=devpassword
+```
+
+## Cost Breakdown
+
+| Environment | Monthly Cost |
+|-------------|--------------|
+| Local Dev | $0 |
+| Staging | ~$21 |
+| Production | ~$36 |
+
+## API Endpoints
+
+- `POST /auth/signup` - Register user
+- `POST /auth/signin` - Login
+- `GET /auth/me` - Get current user
+- `POST /tags/request` - Request new tag
+- `GET /tags/pending` - View pending requests (Sub-Admin+)
+- `GET /users` - List users (Admin only)
+
+Full API docs: http://localhost:8000/docs
+
+## Development
+
+```bash
+# Start development
+make dev
+
+# Make changes to code (auto-reloads)
+
+# Run tests
+make test
+
+# Format code
+make format
 ```
 
 ## Deployment
 
-### Docker Production
-
 ```bash
-docker-compose up -d
+cd terraform
+terraform apply -var-file=terraform.tfvars.staging
 ```
 
-### Manual Deployment
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for complete guide.
 
-1. Set environment variables
-2. Install dependencies: `uv sync`
-3. Seed database: `uv run python seed.py`
-4. Run with gunicorn: `gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker`
+## Support
 
-## Links
+- 📚 Documentation: [docs/](docs/)
+- 🐛 Issues: GitHub Issues
+- 💬 API Docs: http://localhost:8000/docs
 
-- **GitHub**: https://github.com/vexxel-ai/edu
-- **Twitter**: https://x.com/vexxelai
+---
 
-## License
-
-See project documentation for license information.
+Built with FastAPI, Supabase, and PostgreSQL 🚀

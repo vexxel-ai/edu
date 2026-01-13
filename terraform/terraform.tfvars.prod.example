@@ -1,0 +1,24 @@
+# Production Environment Configuration
+# Copy to terraform.tfvars.prod or terraform.tfvars
+
+aws_region     = "us-east-1"
+environment    = "prod"
+instance_type  = "t4g.micro"    # Or upgrade to t4g.small for more power
+volume_size    = 20
+ssh_key_name   = "edu-vexxel-prod-key"
+project_name   = "edu-vexxel"
+
+# Very restricted - only your IP
+allowed_ssh_cidr = ["YOUR_IP/32"]
+
+# Production Supabase project
+supabase_url        = "https://prod-xxxxx.supabase.co"
+supabase_anon_key   = "prod-anon-key"
+supabase_jwt_secret = "prod-jwt-secret"
+
+# Admin credentials - USE STRONG PASSWORDS!
+super_admin_email    = "admin@vexxel.ai"
+super_admin_password = "VERY_SECURE_PASSWORD_HERE"
+
+# Database password - USE STRONG PASSWORD!
+db_password = "VERY_SECURE_DB_PASSWORD_HERE"
