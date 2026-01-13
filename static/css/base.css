@@ -80,6 +80,96 @@
     --spacing: 0.75rem;
 }
 
+/* NOTEBOOK CREAM (Physical notebook aesthetic) */
+:root[data-style="notebook"] {
+    --bg-primary: #fffef7;
+    --bg-secondary: #f5f4ed;
+    --bg-card: #fffef7;
+    --text-primary: #2c2416;
+    --text-secondary: #5a4a3a;
+    --text-tertiary: #8b7a6a;
+    --accent: #c77e3a;
+    --accent-hover: #a66830;
+    --border: #d4c4b0;
+    --shadow: 0 2px 8px rgba(44, 36, 22, 0.12);
+    --font-body: 'Georgia', serif;
+    --font-weight: 400;
+    --radius: 4px;
+    --spacing: 1rem;
+}
+
+/* OCEANIC BLUE (Cool, professional) */
+:root[data-style="oceanic"] {
+    --bg-primary: #f0f4f8;
+    --bg-secondary: #d9e2ec;
+    --bg-card: #ffffff;
+    --text-primary: #102a43;
+    --text-secondary: #486581;
+    --text-tertiary: #7c98b3;
+    --accent: #0d9488;
+    --accent-hover: #0f766e;
+    --border: #bcccdc;
+    --shadow: 0 2px 8px rgba(16, 42, 67, 0.08);
+    --font-body: 'Inter', sans-serif;
+    --font-weight: 400;
+    --radius: 6px;
+    --spacing: 1rem;
+}
+
+/* OCEANIC DARK */
+:root[data-style="oceanic-dark"] {
+    --bg-primary: #0f1419;
+    --bg-secondary: #1a2332;
+    --bg-card: #243447;
+    --text-primary: #d9e2ec;
+    --text-secondary: #9fb3c8;
+    --text-tertiary: #7c98b3;
+    --accent: #14b8a6;
+    --accent-hover: #2dd4bf;
+    --border: #334e68;
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --font-body: 'Inter', sans-serif;
+    --font-weight: 400;
+    --radius: 6px;
+    --spacing: 1rem;
+}
+
+/* SUNSET WARM (Warm, creative) */
+:root[data-style="sunset"] {
+    --bg-primary: #fff5f0;
+    --bg-secondary: #ffe4d6;
+    --bg-card: #ffffff;
+    --text-primary: #3d1f00;
+    --text-secondary: #7a3f00;
+    --text-tertiary: #b86b00;
+    --accent: #f97316;
+    --accent-hover: #ea580c;
+    --border: #ffc9a3;
+    --shadow: 0 2px 8px rgba(249, 115, 22, 0.15);
+    --font-body: 'Inter', sans-serif;
+    --font-weight: 400;
+    --radius: 8px;
+    --spacing: 1rem;
+}
+
+/* SUNSET DARK */
+:root[data-style="sunset-dark"] {
+    --bg-primary: #1a0f0a;
+    --bg-secondary: #2d1810;
+    --bg-card: #3d2416;
+    --text-primary: #fff5f0;
+    --text-secondary: #ffcfb3;
+    --text-tertiary: #ffa366;
+    --accent: #fb923c;
+    --accent-hover: #fdba74;
+    --border: #5a3a2a;
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --font-body: 'Inter', sans-serif;
+    --font-weight: 400;
+    --radius: 8px;
+    --spacing: 1rem;
+}
+
 /* ============================================
    BASE RESETS & TYPOGRAPHY
 ============================================ */

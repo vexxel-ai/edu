@@ -101,7 +101,14 @@ def get_sections_with_subsections(session: Session) -> list[dict]:
 
 def sort_media_assets(assets: list[MediaAsset]) -> dict[str, list[MediaAsset]]:
     """Sort media assets by type and order."""
-    sorted_assets = {"slides": [], "notes": [], "youtube": [], "blog_links": []}
+    sorted_assets = {
+        "slides": [],
+        "notes": [],
+        "youtube": [],
+        "blog_links": [],
+        "code_snippets": [],
+        "exercises": [],
+    }
 
     for asset in sorted(assets, key=lambda x: x.order):
         if asset.type == MediaType.SLIDE:
@@ -112,6 +119,10 @@ def sort_media_assets(assets: list[MediaAsset]) -> dict[str, list[MediaAsset]]:
             sorted_assets["youtube"].append(asset)
         elif asset.type == MediaType.BLOG_LINK:
             sorted_assets["blog_links"].append(asset)
+        elif asset.type == MediaType.CODE_SNIPPET:
+            sorted_assets["code_snippets"].append(asset)
+        elif asset.type == MediaType.EXERCISE:
+            sorted_assets["exercises"].append(asset)
 
     return sorted_assets
 
@@ -261,6 +272,17 @@ async def module_detail(slug: str, request: Request, session: Session = Depends(
     # Convert markdown to HTML (thread-safe)
     description_html = render_markdown(post.description) if post.description else ""
 
+    # Render markdown for exercises content
+    exercises_with_html = []
+    for exercise in sorted_assets["exercises"]:
+        exercise_dict = {
+            "title": exercise.title,
+            "url": exercise.url,
+            "order": exercise.order,
+            "content": render_markdown(exercise.content) if exercise.content else "",
+        }
+        exercises_with_html.append(exercise_dict)
+
     return templates.TemplateResponse(
         "module_detail.html",
         {
@@ -274,6 +296,8 @@ async def module_detail(slug: str, request: Request, session: Session = Depends(
             "notes": sorted_assets["notes"],
             "youtube_videos": sorted_assets["youtube"],
             "blog_links": sorted_assets["blog_links"],
+            "code_snippets": sorted_assets["code_snippets"],
+            "exercises": exercises_with_html,
             "description_html": description_html,
         },
     )

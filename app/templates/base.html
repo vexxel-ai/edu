@@ -49,6 +49,7 @@
     <!-- Custom Stylesheets -->
     <link rel="stylesheet" href="/static/css/base.css">
     <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/notebook.css">
 
     {% block extra_head %}{% endblock %}
 </head>
@@ -80,28 +81,36 @@
         <div class="bg-bg-card border border-border rounded-custom p-8 max-w-md w-11/12 shadow-lg" style="box-shadow: var(--shadow);" onclick="event.stopPropagation()">
             <h2 class="text-xl font-semibold mb-6 text-text-primary" data-lang-key="settings_title">Settings</h2>
 
-            <!-- Style Selection -->
+            <!-- Color Palette Selection -->
             <div class="mb-6 last:mb-0">
-                <label class="block text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2" data-lang-key="settings_style">Style</label>
-                <div class="flex gap-2">
-                    <div class="settings-option flex-1 px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-style="modern" onclick="setStyle('modern')" data-lang-key="style_modern">
-                        Modern
+                <label class="block text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2" data-lang-key="settings_palette">Color Palette</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="settings-option px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-palette="modern-light" onclick="setPalette('modern', 'light')">
+                        Modern Light
                     </div>
-                    <div class="settings-option flex-1 px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-style="terminal" onclick="setStyle('terminal')" data-lang-key="style_terminal">
+                    <div class="settings-option px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-palette="modern-dark" onclick="setPalette('modern', 'dark')">
+                        Modern Dark
+                    </div>
+                    <div class="settings-option px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-palette="terminal-light" onclick="setPalette('terminal', 'light')">
                         Terminal
                     </div>
-                </div>
-            </div>
-
-            <!-- Theme Selection -->
-            <div class="mb-6 last:mb-0">
-                <label class="block text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2" data-lang-key="settings_theme">Theme</label>
-                <div class="flex gap-2">
-                    <div class="settings-option flex-1 px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-theme="light" onclick="setTheme('light')" data-lang-key="theme_light">
-                        Light
+                    <div class="settings-option px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-palette="terminal-dark" onclick="setPalette('terminal', 'dark')">
+                        Matrix
                     </div>
-                    <div class="settings-option flex-1 px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-theme="dark" onclick="setTheme('dark')" data-lang-key="theme_dark">
-                        Dark
+                    <div class="settings-option px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-palette="notebook" onclick="setPalette('notebook', '')">
+                        Notebook
+                    </div>
+                    <div class="settings-option px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-palette="oceanic" onclick="setPalette('oceanic', '')">
+                        Oceanic
+                    </div>
+                    <div class="settings-option px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-palette="oceanic-dark" onclick="setPalette('oceanic-dark', '')">
+                        Oceanic Dark
+                    </div>
+                    <div class="settings-option px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-palette="sunset" onclick="setPalette('sunset', '')">
+                        Sunset
+                    </div>
+                    <div class="settings-option px-3 py-3 bg-bg-secondary border border-border rounded-custom cursor-pointer text-center text-sm font-medium text-text-secondary" data-palette="sunset-dark" onclick="setPalette('sunset-dark', '')">
+                        Sunset Dark
                     </div>
                 </div>
             </div>

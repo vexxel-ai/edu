@@ -58,6 +58,11 @@ def create_sections_and_subsections(session: Session) -> tuple[dict[str, Section
             "slug": "computer-science",
             "description": "Core computer science concepts",
         },
+        {
+            "name": "Leetcode",
+            "slug": "leetcode",
+            "description": "Coding interview problems and patterns",
+        },
     ]
 
     subsections_data = [
@@ -112,6 +117,25 @@ def create_sections_and_subsections(session: Session) -> tuple[dict[str, Section
             "slug": "theory",
             "section_slug": "computer-science",
             "description": "Theoretical computer science",
+        },
+        # Leetcode subsections
+        {
+            "name": "Dynamic Programming",
+            "slug": "dynamic-programming-leetcode",
+            "section_slug": "leetcode",
+            "description": "DP patterns for coding interviews",
+        },
+        {
+            "name": "Sorting & Searching",
+            "slug": "sorting-searching",
+            "section_slug": "leetcode",
+            "description": "Sorting and searching problem patterns",
+        },
+        {
+            "name": "General Patterns",
+            "slug": "general-patterns",
+            "section_slug": "leetcode",
+            "description": "Common problem-solving patterns",
         },
     ]
 
@@ -169,6 +193,12 @@ def create_tags(session: Session) -> dict[str, Tag]:
         {"name": "Python", "slug": "python"},
         {"name": "Theory", "slug": "theory"},
         {"name": "Practice", "slug": "practice"},
+        {"name": "Hash Map", "slug": "hash-map"},
+        {"name": "Arrays", "slug": "arrays"},
+        {"name": "Dynamic Programming", "slug": "dynamic-programming"},
+        {"name": "Binary Search", "slug": "binary-search"},
+        {"name": "Intervals", "slug": "intervals"},
+        {"name": "Sorting", "slug": "sorting"},
     ]
 
     tag_slug_map = {}
@@ -283,11 +313,15 @@ def create_post_from_data(
     for asset_data in metadata.get("media_assets", []):
         media_type = MediaType(asset_data["type"])
 
-        # Create media asset (all types use url field)
+        # Create media asset
+        # For code_snippet and exercise: content field stores the code/markdown
+        # For code_snippet: url field stores the language (e.g., "python", "javascript")
+        # For other types: url field stores the actual URL
         media_asset = MediaAsset(
             post_id=post.id,
             type=media_type,
-            url=asset_data.get("url"),
+            url=asset_data.get("url") or asset_data.get("language"),
+            content=asset_data.get("content"),
             title=asset_data.get("title"),
             order=asset_data.get("order", 0),
         )

@@ -8,26 +8,18 @@
 // ============================================
 
 function loadSettings() {
-    const style = localStorage.getItem('style') || 'modern';
-    const theme = localStorage.getItem('theme') || 'light';
+    const palette = localStorage.getItem('palette') || 'modern-light';
     const lang = localStorage.getItem('language') || 'en';
 
-    applyStyle(style);
-    applyTheme(theme);
+    applyPalette(palette);
     applyLanguage(lang);
     updateSettingsUI();
 }
 
-function setStyle(style) {
-    localStorage.setItem('style', style);
-    applyStyle(style);
-    updateSettingsUI();
-}
-
-function setTheme(theme) {
-    localStorage.setItem('theme', theme);
-    applyTheme(theme);
-    updateCodeTheme(theme);
+function setPalette(style, theme) {
+    const palette = theme ? `${style}-${theme}` : style;
+    localStorage.setItem('palette', palette);
+    applyPalette(palette);
     updateSettingsUI();
 }
 
@@ -37,12 +29,33 @@ function setLanguage(lang) {
     updateSettingsUI();
 }
 
-function applyStyle(style) {
-    document.documentElement.setAttribute('data-style', style);
-}
+function applyPalette(palette) {
+    // Map of palette names to their style and theme attributes
+    const paletteMap = {
+        'modern-light': { style: 'modern', theme: 'light' },
+        'modern-dark': { style: 'modern', theme: 'dark' },
+        'terminal-light': { style: 'terminal', theme: 'light' },
+        'terminal-dark': { style: 'terminal', theme: 'dark' },
+        'notebook': { style: 'notebook', theme: '' },
+        'oceanic': { style: 'oceanic', theme: '' },
+        'oceanic-dark': { style: 'oceanic-dark', theme: '' },
+        'sunset': { style: 'sunset', theme: '' },
+        'sunset-dark': { style: 'sunset-dark', theme: '' },
+    };
 
-function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
+    const config = paletteMap[palette] || { style: 'modern', theme: 'light' };
+
+    document.documentElement.setAttribute('data-style', config.style);
+    if (config.theme) {
+        document.documentElement.setAttribute('data-theme', config.theme);
+    } else {
+        document.documentElement.removeAttribute('data-theme');
+    }
+
+    // Update code highlighting theme
+    // Use 'dark' for highlight.js if palette name contains 'dark'
+    const isDark = palette.includes('dark');
+    updateCodeTheme(isDark ? 'dark' : 'light');
 }
 
 function applyLanguage(lang) {
@@ -69,18 +82,13 @@ function updateCodeTheme(theme) {
 }
 
 function updateSettingsUI() {
-    const style = localStorage.getItem('style') || 'modern';
-    const theme = localStorage.getItem('theme') || 'light';
+    const palette = localStorage.getItem('palette') || 'modern-light';
     const lang = localStorage.getItem('language') || 'en';
 
-    // Update style options
-    document.querySelectorAll('.settings-option[data-style]').forEach(el => {
-        el.classList.toggle('active', el.getAttribute('data-style') === style);
-    });
-
-    // Update theme options
-    document.querySelectorAll('.settings-option[data-theme]').forEach(el => {
-        el.classList.toggle('active', el.getAttribute('data-theme') === theme);
+    // Update palette options
+    document.querySelectorAll('.settings-option[data-palette]').forEach(el => {
+        const elPalette = el.getAttribute('data-palette');
+        el.classList.toggle('active', elPalette === palette);
     });
 
     // Update language options

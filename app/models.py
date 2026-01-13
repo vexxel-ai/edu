@@ -23,6 +23,8 @@ class MediaType(str, Enum):
     IMAGE = "image"
     YOUTUBE = "youtube"
     BLOG_LINK = "blog_link"
+    CODE_SNIPPET = "code_snippet"
+    EXERCISE = "exercise"
 
 
 class UserRole(str, Enum):
@@ -242,6 +244,8 @@ class MediaAsset(SQLModel, table=True):
     - image: Handwritten notes or diagrams
     - youtube: YouTube video links
     - blog_link: External blog/article references
+    - code_snippet: Code examples (content field stores code, url stores language)
+    - exercise: Practice problems (content field stores markdown with question/solution)
     """
 
     id: Optional[int] = Field(default=None, primary_key=True)

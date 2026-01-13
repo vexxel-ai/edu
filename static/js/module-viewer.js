@@ -268,6 +268,88 @@ if (typeof htmx !== 'undefined') {
 }
 
 // ============================================
+// CODE TABS
+// ============================================
+
+function switchCodeTab(tabIndex) {
+    // Remove active class from all tabs and content
+    const tabs = document.querySelectorAll('.code-tab');
+    const contents = document.querySelectorAll('.code-content');
+
+    tabs.forEach(tab => tab.classList.remove('active'));
+    contents.forEach(content => content.classList.remove('active'));
+
+    // Add active class to selected tab and content
+    const selectedTab = document.querySelector(`.code-tab[data-tab-index="${tabIndex}"]`);
+    const selectedContent = document.querySelector(`.code-content[data-code-index="${tabIndex}"]`);
+
+    if (selectedTab) selectedTab.classList.add('active');
+    if (selectedContent) {
+        selectedContent.classList.add('active');
+        // Re-run highlight.js on the new content
+        const codeBlock = selectedContent.querySelector('code');
+        if (codeBlock && typeof hljs !== 'undefined') {
+            hljs.highlightElement(codeBlock);
+        }
+    }
+}
+
+function copyCode(codeIndex) {
+    const codeContent = document.querySelector(`.code-content[data-code-index="${codeIndex}"]`);
+    if (!codeContent) return;
+
+    const codeBlock = codeContent.querySelector('code');
+    if (!codeBlock) return;
+
+    // Copy to clipboard
+    const text = codeBlock.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        // Update button text
+        const btn = codeContent.querySelector('.copy-code-btn');
+        const btnText = btn.querySelector('.copy-text');
+        const originalText = btnText.textContent;
+
+        btnText.textContent = 'Copied!';
+        btn.style.background = 'var(--accent)';
+        btn.style.color = 'white';
+
+        // Reset after 2 seconds
+        setTimeout(() => {
+            btnText.textContent = originalText;
+            btn.style.background = '';
+            btn.style.color = '';
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy code:', err);
+    });
+}
+
+// ============================================
+// EXERCISE TOGGLES
+// ============================================
+
+function toggleSolution(exerciseIndex) {
+    const exerciseCard = document.querySelector(`.exercise-card[data-exercise-index="${exerciseIndex}"]`);
+    if (!exerciseCard) return;
+
+    const solution = exerciseCard.querySelector('.exercise-solution');
+    const btn = exerciseCard.querySelector('.show-solution-btn');
+    const btnText = btn.querySelector('.solution-btn-text');
+
+    if (solution.style.display === 'none' || !solution.style.display) {
+        // Show solution
+        solution.style.display = 'block';
+        btnText.textContent = 'Hide Solution';
+        btn.classList.add('expanded');
+    } else {
+        // Hide solution
+        solution.style.display = 'none';
+        btnText.textContent = 'Show Solution';
+        btn.classList.remove('expanded');
+    }
+}
+
+// ============================================
 // INITIALIZATION
 // ============================================
 
@@ -278,4 +360,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize magnifiers for both containers (if they exist)
     initMagnifier('slideContainer', 'magnifier');
     initMagnifier('slideContainer2', 'magnifier2');
+
+    // Initialize syntax highlighting for code snippets
+    if (typeof hljs !== 'undefined') {
+        document.querySelectorAll('.code-content code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
+    }
 });

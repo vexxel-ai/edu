@@ -70,23 +70,21 @@
 
         <!-- STUDIO LAYOUT: Left Panel (Visual Content) -->
         <div class="left-panel bg-bg-primary border-r border-border p-0" id="studioLeftPanel" style="display: none;">
-            <!-- Vertical Tab Switcher (on left edge) -->
+            <!-- Vertical Tab Switcher (on left edge) - Only show if both notes AND slides exist -->
+            {% if notes and slides %}
             <div class="vertical-tab-switcher">
-                {% if notes %}
                 <button class="vertical-tab-btn active" data-tab="notes" onclick="switchStudioTab('notes')" title="Handwritten Notes">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="vertical-tab-icon">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
                     </svg>
                 </button>
-                {% endif %}
-                {% if slides %}
-                <button class="vertical-tab-btn {% if not notes %}active{% endif %}" data-tab="slides" onclick="switchStudioTab('slides')" title="Slides">
+                <button class="vertical-tab-btn" data-tab="slides" onclick="switchStudioTab('slides')" title="Slides">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="vertical-tab-icon">
                         <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
                     </svg>
                 </button>
-                {% endif %}
             </div>
+            {% endif %}
 
             <!-- Notes Tab Content -->
             {% if notes %}
@@ -153,13 +151,13 @@
         </div>
 
         <!-- STUDIO LAYOUT: Right Panel (Text Content) -->
-        <div class="right-panel overflow-y-auto px-8 py-8" id="studioRightPanel" style="display: none;">
+        <div class="right-panel overflow-y-auto px-2 py-2" id="studioRightPanel" style="display: none;">
             <!-- Interactive Content in Studio Right Panel -->
             {% if html_content %}
             <section class="mb-12" id="section-interactive-studio">
                 <h2 class="text-xl font-semibold text-text-primary mb-2" data-lang-key="interactive_content">Interactive Content</h2>
                 {% for html in html_content %}
-                <div class="bg-bg-card border border-border rounded-custom p-6 mb-4">
+                <div class="bg-bg-card  p-2 mb-4">
                     {% if html.title %}
                     <h3 class="font-semibold text-text-primary mb-4">{{ html.title }}</h3>
                     {% endif %}
@@ -174,7 +172,7 @@
             <!-- Description in Studio Right Panel -->
             {% if description_html %}
             <section class="mb-12" id="section-description-studio">
-                <div class="markdown-content">
+                <div class="markdown-content notebook-wrapper">
                     {{ description_html|safe }}
                 </div>
             </section>
@@ -293,13 +291,92 @@
         <!-- 4. Markdown Description -->
         {% if description_html %}
         <section class="section" id="section-description" data-section-id="description">
-            <div class="markdown-content">
+            <div class="markdown-content notebook-wrapper">
                 {{ description_html|safe }}
             </div>
         </section>
         {% endif %}
 
-        <!-- 5. References (ALWAYS LAST) -->
+        <!-- 5. Code Snippets (if present) -->
+        {% if code_snippets %}
+        <section class="section" id="section-code" data-section-id="code">
+            <h2 class="section-title">Code Solutions</h2>
+
+            <!-- Code Tabs -->
+            <div class="code-tabs-container">
+                <div class="code-tabs">
+                    {% for code in code_snippets %}
+                    <button class="code-tab {% if loop.index == 1 %}active{% endif %}"
+                            onclick="switchCodeTab({{ loop.index - 1 }})"
+                            data-tab-index="{{ loop.index - 1 }}">
+                        <span class="code-tab-title">{{ code.title or 'Solution ' ~ loop.index }}</span>
+                        <span class="code-tab-language">{{ code.url or 'code' }}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+
+                <!-- Code Content -->
+                <div class="code-content-container">
+                    {% for code in code_snippets %}
+                    <div class="code-content {% if loop.index == 1 %}active{% endif %}" data-code-index="{{ loop.index - 1 }}">
+                        <div class="code-header">
+                            <span class="language-badge">{{ code.url or 'code' }}</span>
+                            <button class="copy-code-btn" onclick="copyCode({{ loop.index - 1 }})" title="Copy code">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-icon">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span class="copy-text">Copy</span>
+                            </button>
+                        </div>
+                        <pre><code class="language-{{ code.url or 'python' }}">{{ code.content }}</code></pre>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- 6. Practice Exercises (if present) -->
+        {% if exercises %}
+        <section class="section" id="section-exercises" data-section-id="exercises">
+            <h2 class="section-title">Practice Exercises</h2>
+
+            {% for exercise in exercises %}
+            <div class="exercise-card" data-exercise-index="{{ loop.index - 1 }}">
+                <div class="exercise-header">
+                    <h3 class="exercise-title">{{ exercise.title or 'Exercise ' ~ loop.index }}</h3>
+                    <span class="exercise-number">{{ loop.index }}/{{ exercises|length }}</span>
+                </div>
+
+                {% set parts = exercise.content.split('---SOLUTION---') %}
+
+                <!-- Question Part -->
+                <div class="exercise-question markdown-content">
+                    {{ parts[0]|safe if parts|length > 0 else exercise.content|safe }}
+                </div>
+
+                <!-- Solution Part (hidden by default) -->
+                {% if parts|length > 1 %}
+                <div class="exercise-solution-container">
+                    <button class="show-solution-btn" onclick="toggleSolution({{ loop.index - 1 }})">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="solution-icon">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                        <span class="solution-btn-text">Show Solution</span>
+                    </button>
+
+                    <div class="exercise-solution markdown-content" style="display: none;">
+                        {{ parts[1]|safe }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- 7. References (ALWAYS LAST) -->
         {% if youtube_videos or blog_links %}
         <section class="section" id="section-references" data-section-id="references">
             <h2 class="section-title" data-lang-key="references">References</h2>
