@@ -147,21 +147,43 @@ async def modules_page(
     request: Request,
     section_id: Optional[int] = None,
     subsection_id: Optional[int] = None,
+    tag_id: Optional[int] = None,
     session: Session = Depends(get_session),
 ):
     """
     All modules page with section/subsection sidebar and module grid.
 
-    Supports filtering by section or subsection via query parameters.
+    Supports filtering by section, subsection, or tag via query parameters.
     """
     # Get sections with subsections for sidebar
     sections_hierarchy = get_sections_with_subsections(session)
 
+    # Get all tags for optional filtering
+    all_tags = session.exec(select(Tag).order_by(Tag.name)).all()
+
     # Get posts (filtered if needed)
     selected_section = None
     selected_subsection = None
+    selected_tag = None
 
-    if subsection_id:
+    if tag_id:
+        # Filter by tag
+        selected_tag = session.get(Tag, tag_id)
+        if selected_tag:
+            # Get posts with this tag
+            post_tag_relations = session.exec(select(PostTag).where(PostTag.tag_id == tag_id)).all()
+            post_ids = [pt.post_id for pt in post_tag_relations]
+            if post_ids:
+                posts = list(
+                    session.exec(
+                        select(Post).where(Post.id.in_(post_ids)).order_by(Post.created_at.desc())
+                    ).all()
+                )
+            else:
+                posts = []
+        else:
+            posts = []
+    elif subsection_id:
         # Filter by subsection (most specific)
         posts = session.exec(
             select(Post)
@@ -189,6 +211,8 @@ async def modules_page(
             "sections_hierarchy": sections_hierarchy,
             "selected_section": selected_section,
             "selected_subsection": selected_subsection,
+            "all_tags": all_tags,
+            "selected_tag": selected_tag,
         },
     )
 

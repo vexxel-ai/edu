@@ -9,68 +9,129 @@
         All Modules
     </h1>
     <p class="text-[15px] md:text-base text-text-secondary leading-relaxed" data-lang-key="all_modules_description">
-        Browse all learning modules by topic or tag
+        Browse all learning modules by section, subsection, or tag
     </p>
 </section>
 
 <!-- Main Content -->
 <div class="max-w-7xl mx-auto px-4 py-8">
-    <!-- Mobile: Tag Filter Toggle -->
-    <button class="filter-toggle block w-full px-3 py-3 bg-bg-secondary border border-border rounded-custom text-text-primary font-medium text-sm text-left cursor-pointer mb-4" onclick="toggleFilters()">
-        <span data-lang-key="filter_by_tag">Filter by Tag</span> ▼
+    <!-- Mobile: Filter Toggle -->
+    <button class="filter-toggle block w-full px-3 py-3 bg-bg-secondary border border-border rounded-custom text-text-primary font-medium text-sm text-left cursor-pointer mb-4 md:hidden" onclick="toggleFilters()">
+        <span data-lang-key="filter_by_section">Filter by Section</span> ▼
     </button>
 
-    <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8">
         <!-- Sidebar (Hidden on mobile, sticky on desktop) -->
         <aside class="order-2 md:order-1">
             <div class="filter-panel bg-bg-card border border-border rounded-custom p-4 mb-6" id="filterPanel">
-                <div class="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-4" data-lang-key="tags_label">Tags</div>
+                <div class="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-4" data-lang-key="sections_label">Sections</div>
 
                 <!-- All modules -->
-                <a href="/modules?tag_id="
-                   hx-get="/api/modules"
-                   hx-target="#module-content"
-                   hx-swap="innerHTML"
-                   class="tag-link block px-2 py-2 mb-1 {% if not selected_tag %}text-accent bg-bg-secondary{% else %}text-text-secondary{% endif %} no-underline text-sm rounded-custom"
+                <a href="/modules"
+                   class="block px-3 py-2 mb-2 {% if not selected_section and not selected_subsection %}text-accent bg-bg-secondary font-medium{% else %}text-text-secondary{% endif %} no-underline text-sm rounded-custom hover:bg-bg-secondary transition-colors"
                    data-lang-key="all_modules">
                     All Modules
                 </a>
 
                 <div class="h-px bg-border my-3"></div>
 
-                <!-- Tag tree -->
-                {% for item in hierarchical_tags %}
-                <div class="mb-2">
-                    <a href="/modules?tag_id={{ item.tag.id }}"
-                       hx-get="/api/modules?tag_id={{ item.tag.id }}"
-                       hx-target="#module-content"
-                       hx-swap="innerHTML"
-                       class="tag-link block px-2 py-2 {% if selected_tag and selected_tag.id == item.tag.id %}text-accent bg-bg-secondary{% else %}text-text-primary{% endif %} no-underline text-sm font-medium rounded-custom">
-                        {{ item.tag.name }}
+                <!-- Section/Subsection tree -->
+                {% for item in sections_hierarchy %}
+                <div class="mb-3">
+                    <!-- Section -->
+                    <a href="/modules?section_id={{ item.section.id }}"
+                       class="block px-3 py-2 {% if selected_section and selected_section.id == item.section.id and not selected_subsection %}text-accent bg-bg-secondary font-medium{% else %}text-text-primary font-medium{% endif %} no-underline text-sm rounded-custom hover:bg-bg-secondary transition-colors">
+                        {{ item.section.name }}
                     </a>
 
-                    {% if item.children %}
-                    <div class="ml-4 mt-1">
-                        {% for child in item.children %}
-                        <a href="/modules?tag_id={{ child.id }}"
-                           hx-get="/api/modules?tag_id={{ child.id }}"
-                           hx-target="#module-content"
-                           hx-swap="innerHTML"
-                           class="tag-link block px-2 py-1.5 {% if selected_tag and selected_tag.id == child.id %}text-accent bg-bg-secondary{% else %}text-text-secondary{% endif %} no-underline text-[13px] rounded-custom">
-                            {{ child.name }}
+                    <!-- Subsections -->
+                    {% if item.subsections %}
+                    <div class="ml-4 mt-1 space-y-1">
+                        {% for subsection in item.subsections %}
+                        <a href="/modules?subsection_id={{ subsection.id }}"
+                           class="block px-3 py-1.5 {% if selected_subsection and selected_subsection.id == subsection.id %}text-accent bg-bg-secondary{% else %}text-text-secondary{% endif %} no-underline text-[13px] rounded-custom hover:bg-bg-secondary transition-colors">
+                            {{ subsection.name }}
                         </a>
                         {% endfor %}
                     </div>
                     {% endif %}
                 </div>
                 {% endfor %}
+
+                <!-- Tags Section (Optional) -->
+                {% if all_tags %}
+                <div class="h-px bg-border my-4"></div>
+                <div class="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-3 mt-4" data-lang-key="tags_label">Tags</div>
+                <div class="flex flex-wrap gap-2">
+                    {% for tag in all_tags %}
+                    <a href="/modules?tag_id={{ tag.id }}"
+                       class="inline-block px-2 py-1 text-xs {% if selected_tag and selected_tag.id == tag.id %}bg-accent text-white{% else %}bg-bg-secondary text-text-secondary{% endif %} rounded hover:bg-accent hover:text-white transition-colors no-underline">
+                        {{ tag.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="order-1 md:order-2" id="module-content">
-            {% include 'partials/module_content.html' %}
+        <main class="order-1 md:order-2">
+            <!-- Breadcrumb -->
+            {% if selected_section or selected_subsection or selected_tag %}
+            <div class="flex items-center gap-2 text-sm text-text-tertiary mb-6">
+                <a href="/modules" class="hover:text-text-primary transition-colors">All Modules</a>
+                {% if selected_tag %}
+                <span>›</span>
+                <span class="text-text-primary font-medium">Tag: {{ selected_tag.name }}</span>
+                {% endif %}
+                {% if selected_section %}
+                <span>›</span>
+                <a href="/modules?section_id={{ selected_section.id }}" class="hover:text-text-primary transition-colors">{{ selected_section.name }}</a>
+                {% endif %}
+                {% if selected_subsection %}
+                <span>›</span>
+                <span class="text-text-primary font-medium">{{ selected_subsection.name }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Module Content -->
+            <div id="module-content">
+                {% include 'partials/module_content.html' %}
+            </div>
         </main>
     </div>
 </div>
+
+<script>
+function toggleFilters() {
+    const panel = document.getElementById('filterPanel');
+    const toggle = document.querySelector('.filter-toggle');
+    panel.classList.toggle('hidden');
+    panel.classList.toggle('block');
+
+    // Update arrow
+    if (panel.classList.contains('hidden')) {
+        toggle.innerHTML = toggle.innerHTML.replace('▲', '▼');
+    } else {
+        toggle.innerHTML = toggle.innerHTML.replace('▼', '▲');
+    }
+}
+
+// Initially hide on mobile
+if (window.innerWidth < 768) {
+    document.getElementById('filterPanel').classList.add('hidden');
+}
+</script>
+
+<style>
+@media (max-width: 768px) {
+    .filter-panel {
+        display: none;
+    }
+    .filter-panel.block {
+        display: block !important;
+    }
+}
+</style>
 {% endblock %}

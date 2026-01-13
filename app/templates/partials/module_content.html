@@ -1,13 +1,17 @@
 <div class="flex justify-between items-center mb-6">
     <h2 class="text-xl font-semibold text-text-primary m-0">
         {% if selected_tag %}
-            {{ selected_tag.name }}
+            Tag: {{ selected_tag.name }}
+        {% elif selected_subsection %}
+            {{ selected_subsection.name }}
+        {% elif selected_section %}
+            {{ selected_section.name }}
         {% else %}
             <span data-lang-key="all_modules">All Modules</span>
         {% endif %}
     </h2>
     <span class="text-sm text-text-tertiary">
-        {{ posts|length }}
+        {{ posts|length }} {% if posts|length == 1 %}module{% else %}modules{% endif %}
     </span>
 </div>
 
