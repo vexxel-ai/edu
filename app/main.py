@@ -148,7 +148,7 @@ async def homepage(request: Request, session: Session = Depends(get_session)):
     Shows only the top 2 modules as featured content.
     """
     # Get only the first 2 posts for the homepage
-    posts = session.exec(select(Post).order_by(Post.created_at.desc()).limit(2)).all()
+    posts = session.exec(select(Post).where(Post.is_approved == True).order_by(Post.created_at.desc()).limit(2)).all()
 
     return templates.TemplateResponse("index.html", {"request": request, "posts": posts})
 
@@ -187,7 +187,7 @@ async def modules_page(
             if post_ids:
                 posts = list(
                     session.exec(
-                        select(Post).where(Post.id.in_(post_ids)).order_by(Post.created_at.desc())
+                        select(Post).where(Post.id.in_(post_ids), Post.is_approved == True).order_by(Post.created_at.desc())
                     ).all()
                 )
             else:
@@ -198,7 +198,7 @@ async def modules_page(
         # Filter by subsection (most specific)
         posts = session.exec(
             select(Post)
-            .where(Post.subsection_id == subsection_id)
+            .where(Post.subsection_id == subsection_id, Post.is_approved == True)
             .order_by(Post.created_at.desc())
         ).all()
         selected_subsection = session.get(Subsection, subsection_id)
@@ -207,12 +207,12 @@ async def modules_page(
     elif section_id:
         # Filter by section
         posts = session.exec(
-            select(Post).where(Post.section_id == section_id).order_by(Post.created_at.desc())
+            select(Post).where(Post.section_id == section_id, Post.is_approved == True).order_by(Post.created_at.desc())
         ).all()
         selected_section = session.get(Section, section_id)
     else:
-        # Get all posts
-        posts = session.exec(select(Post).order_by(Post.created_at.desc())).all()
+        # Get all approved posts
+        posts = session.exec(select(Post).where(Post.is_approved == True).order_by(Post.created_at.desc())).all()
 
     return templates.TemplateResponse(
         "modules.html",
@@ -322,7 +322,7 @@ async def filter_modules(
         # Filter by subsection
         posts = session.exec(
             select(Post)
-            .where(Post.subsection_id == subsection_id)
+            .where(Post.subsection_id == subsection_id, Post.is_approved == True)
             .order_by(Post.created_at.desc())
         ).all()
         selected_subsection = session.get(Subsection, subsection_id)
@@ -331,12 +331,12 @@ async def filter_modules(
     elif section_id:
         # Filter by section
         posts = session.exec(
-            select(Post).where(Post.section_id == section_id).order_by(Post.created_at.desc())
+            select(Post).where(Post.section_id == section_id, Post.is_approved == True).order_by(Post.created_at.desc())
         ).all()
         selected_section = session.get(Section, section_id)
     else:
-        # Get all posts
-        posts = session.exec(select(Post).order_by(Post.created_at.desc())).all()
+        # Get all approved posts
+        posts = session.exec(select(Post).where(Post.is_approved == True).order_by(Post.created_at.desc())).all()
 
     return templates.TemplateResponse(
         "partials/module_content.html",

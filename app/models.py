@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import Boolean, UniqueConstraint
 from sqlmodel import Column, Field, Relationship, SQLModel, String, Text
 
 
@@ -192,7 +192,10 @@ class User(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationships
-    posts: list["Post"] = Relationship(back_populates="author")
+    posts: list["Post"] = Relationship(
+        back_populates="author",
+        sa_relationship_kwargs={"foreign_keys": "[Post.author_id]"}
+    )
 
 
 # ==================== Posts & Media ====================
@@ -208,6 +211,11 @@ class Post(SQLModel, table=True):
 
     OPTIONAL:
     - tags: Posts can have zero or more tags for filtering
+
+    APPROVAL WORKFLOW:
+    - is_approved: False by default, requires admin/sub-admin approval
+    - approved_by_id: Admin who approved the post
+    - approved_at: Timestamp of approval
     """
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -222,13 +230,21 @@ class Post(SQLModel, table=True):
     # Optional author
     author_id: Optional[int] = Field(default=None, foreign_key="user.id")
 
+    # Approval workflow
+    is_approved: bool = Field(default=False, sa_column=Column(Boolean, index=True))
+    approved_by_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    approved_at: Optional[datetime] = Field(default=None)
+
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationships
     section: Section = Relationship(back_populates="posts")
     subsection: Subsection = Relationship(back_populates="posts")
-    author: Optional[User] = Relationship(back_populates="posts")
+    author: Optional[User] = Relationship(
+        back_populates="posts",
+        sa_relationship_kwargs={"foreign_keys": "[Post.author_id]"}
+    )
     media_assets: list["MediaAsset"] = Relationship(
         back_populates="post", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )

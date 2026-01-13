@@ -4,6 +4,8 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="/static/css/module-viewer.css">
+<link rel="stylesheet" href="/static/css/content-tabs.css">
+<script src="/static/js/content-tabs.js" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -150,78 +152,349 @@
             {% endif %}
         </div>
 
-        <!-- STUDIO LAYOUT: Right Panel (Text Content) -->
-        <div class="right-panel overflow-y-auto px-2 py-2" id="studioRightPanel" style="display: none;">
-            <!-- Interactive Content in Studio Right Panel -->
-            {% if html_content %}
-            <section class="mb-12" id="section-interactive-studio">
-                <h2 class="text-xl font-semibold text-text-primary mb-2" data-lang-key="interactive_content">Interactive Content</h2>
-                {% for html in html_content %}
-                <div class="bg-bg-card  p-2 mb-4">
-                    {% if html.title %}
-                    <h3 class="font-semibold text-text-primary mb-4">{{ html.title }}</h3>
+        <!-- STUDIO LAYOUT: Right Panel (Tabbed Content) -->
+        <div class="right-panel overflow-hidden p-0" id="studioRightPanel" style="display: none;">
+            <div class="content-tabs-wrapper h-full">
+                <!-- Browser-style Tabs Header -->
+                <div class="content-tabs-header">
+                    {% if description_html or html_content %}
+                    <button class="content-tab active" data-tab="text" onclick="switchContentTab('text')">
+                        <svg viewBox="0 0 24 24" fill="currentColor" class="content-tab-icon">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
+                            <path d="M8 13h8v2H8zm0-4h8v2H8z"/>
+                        </svg>
+                        <span>Text</span>
+                    </button>
                     {% endif %}
-                    <div>
-                        {{ html.content|safe }}
-                    </div>
-                </div>
-                {% endfor %}
-            </section>
-            {% endif %}
 
-            <!-- Description in Studio Right Panel -->
-            {% if description_html %}
-            <section class="mb-12" id="section-description-studio">
-                <div class="markdown-content notebook-wrapper">
-                    {{ description_html|safe }}
-                </div>
-            </section>
-            {% endif %}
-
-            <!-- References at bottom of Studio Right Panel -->
-            {% if youtube_videos or blog_links %}
-            <section class="section" id="section-references-studio">
-                <h2 class="section-title" data-lang-key="references">References</h2>
-
-                {% if youtube_videos %}
-                {% for video in youtube_videos %}
-                <div class="content-card">
-                    {% if video.title %}
-                    <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">{{ video.title }}</h3>
+                    {% if code_snippets %}
+                    <button class="content-tab {% if not description_html and not html_content %}active{% endif %}" data-tab="code" onclick="switchContentTab('code')">
+                        <svg viewBox="0 0 24 24" fill="currentColor" class="content-tab-icon">
+                            <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+                        </svg>
+                        <span>Code</span>
+                    </button>
                     {% endif %}
-                    <div class="youtube-embed">
-                        <iframe
-                            src="{{ video.url }}"
-                            frameborder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen
-                        ></iframe>
-                    </div>
+
+                    {% if exercises %}
+                    <button class="content-tab {% if not description_html and not html_content and not code_snippets %}active{% endif %}" data-tab="exercises" onclick="switchContentTab('exercises')">
+                        <svg viewBox="0 0 24 24" fill="currentColor" class="content-tab-icon">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                        </svg>
+                        <span>Exercises</span>
+                    </button>
+                    {% endif %}
                 </div>
-                {% endfor %}
+
+                <!-- Tab Panels Container -->
+                <div class="content-tab-body">
+                    <!-- TEXT TAB PANEL -->
+                    {% if description_html or html_content %}
+                    <div class="tab-panel active" data-panel="text">
+                        <!-- Interactive Content -->
+                        {% if html_content %}
+                        <section class="mb-12">
+                            <h2 class="text-xl font-semibold text-text-primary mb-4" data-lang-key="interactive_content">Interactive Content</h2>
+                            {% for html in html_content %}
+                            <div class="bg-bg-card border border-border rounded-lg p-4 mb-4">
+                                {% if html.title %}
+                                <h3 class="font-semibold text-text-primary mb-4">{{ html.title }}</h3>
+                                {% endif %}
+                                <div>
+                                    {{ html.content|safe }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </section>
+                        {% endif %}
+
+                        <!-- Markdown Description -->
+                        {% if description_html %}
+                        <section class="mb-12">
+                            <div class="markdown-content notebook-wrapper">
+                                {{ description_html|safe }}
+                            </div>
+                        </section>
+                        {% endif %}
+
+                        <!-- References -->
+                        {% if youtube_videos or blog_links %}
+                        <section class="mb-12">
+                            <h2 class="text-xl font-semibold text-text-primary mb-4 pb-3 border-b border-border" data-lang-key="references">References</h2>
+
+                            {% if youtube_videos %}
+                            {% for video in youtube_videos %}
+                            <div class="bg-bg-card border border-border rounded-lg p-4 mb-4">
+                                {% if video.title %}
+                                <h3 class="font-semibold text-text-primary mb-3">{{ video.title }}</h3>
+                                {% endif %}
+                                <div class="relative w-full" style="padding-bottom: 56.25%;">
+                                    <iframe
+                                        src="{{ video.url }}"
+                                        frameborder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowfullscreen
+                                        class="absolute top-0 left-0 w-full h-full rounded"
+                                    ></iframe>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+
+                            {% if blog_links %}
+                            <div class="mt-4">
+                                <h3 class="font-semibold text-text-primary mb-3 text-lg">External Resources</h3>
+                                {% for link in blog_links %}
+                                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="block bg-bg-card border border-border rounded-lg p-4 mb-3 hover:border-accent transition-colors">
+                                    <span class="text-sm text-text-secondary">🔗 Blog</span>
+                                    <div class="font-medium text-text-primary mt-1">{{ link.title or 'External Resource' }}</div>
+                                    <div class="text-sm text-text-tertiary mt-1 truncate">{{ link.url }}</div>
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </section>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- CODE TAB PANEL -->
+                    {% if code_snippets %}
+                    <div class="tab-panel {% if not description_html and not html_content %}active{% endif %}" data-panel="code">
+                        <h2 class="text-xl font-semibold text-text-primary mb-4">Code Solutions</h2>
+
+                        <div class="code-tabs-container">
+                            <div class="code-tabs">
+                                {% for code in code_snippets %}
+                                <button class="code-tab {% if loop.index == 1 %}active{% endif %}"
+                                        onclick="switchCodeTab({{ loop.index - 1 }})"
+                                        data-tab-index="{{ loop.index - 1 }}">
+                                    <span class="code-tab-title">{{ code.title or 'Solution ' ~ loop.index }}</span>
+                                    <span class="code-tab-language">{{ code.url or 'code' }}</span>
+                                </button>
+                                {% endfor %}
+                            </div>
+
+                            <div class="code-content-container">
+                                {% for code in code_snippets %}
+                                <div class="code-content {% if loop.index == 1 %}active{% endif %}" data-code-index="{{ loop.index - 1 }}">
+                                    <div class="code-header">
+                                        <span class="language-badge">{{ code.url or 'code' }}</span>
+                                        <button class="copy-code-btn" onclick="copyCode({{ loop.index - 1 }})" title="Copy code">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-icon">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                            <span class="copy-text">Copy</span>
+                                        </button>
+                                    </div>
+                                    <pre><code class="language-{{ code.url or 'python' }}">{{ code.content }}</code></pre>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- EXERCISES TAB PANEL -->
+                    {% if exercises %}
+                    <div class="tab-panel {% if not description_html and not html_content and not code_snippets %}active{% endif %}" data-panel="exercises">
+                        <h2 class="text-xl font-semibold text-text-primary mb-4">Practice Exercises</h2>
+
+                        {% for exercise in exercises %}
+                        <div class="exercise-card" data-exercise-index="{{ loop.index - 1 }}">
+                            <div class="exercise-header">
+                                <h3 class="exercise-title">{{ exercise.title or 'Exercise ' ~ loop.index }}</h3>
+                                <span class="exercise-number">{{ loop.index }}/{{ exercises|length }}</span>
+                            </div>
+
+                            {% set parts = exercise.content.split('---SOLUTION---') %}
+
+                            <div class="exercise-question markdown-content">
+                                {{ parts[0]|safe if parts|length > 0 else exercise.content|safe }}
+                            </div>
+
+                            {% if parts|length > 1 %}
+                            <div class="exercise-solution-container">
+                                <button class="show-solution-btn" onclick="toggleSolution({{ loop.index - 1 }})">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="solution-icon">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                    <span class="solution-btn-text">Show Solution</span>
+                                </button>
+
+                                <div class="exercise-solution markdown-content" style="display: none;">
+                                    {{ parts[1]|safe }}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENT SECTIONS (for Classic/Centered layout when no notes/slides) -->
+        <!-- Use tabbed interface if code or exercises exist, otherwise use old sections below -->
+
+        {% if not notes and not slides and (code_snippets or exercises) %}
+        <!-- Tabbed Content for posts without notes/slides -->
+        <div class="content-tabs-wrapper" style="min-height: 60vh;">
+            <div class="content-tabs-header">
+                {% if description_html %}
+                <button class="content-tab active" data-tab="text" onclick="switchContentTab('text')">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="content-tab-icon">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
+                        <path d="M8 13h8v2H8zm0-4h8v2H8z"/>
+                    </svg>
+                    <span>Text</span>
+                </button>
                 {% endif %}
 
-                {% if blog_links %}
-                <div style="margin-top: 1rem;">
-                    <h3 style="font-weight: 600; color: var(--text-primary); margin-bottom: 1rem; font-size: 1.125rem;">
-                        External Resources
-                    </h3>
-                    {% for link in blog_links %}
-                    <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="reference-item">
-                        <span class="reference-type">🔗 Blog</span>
-                        <div class="reference-title">{{ link.title or 'External Resource' }}</div>
-                        <div class="reference-url">{{ link.url }}</div>
-                    </a>
+                {% if code_snippets %}
+                <button class="content-tab {% if not description_html %}active{% endif %}" data-tab="code" onclick="switchContentTab('code')">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="content-tab-icon">
+                        <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+                    </svg>
+                    <span>Code</span>
+                </button>
+                {% endif %}
+
+                {% if exercises %}
+                <button class="content-tab {% if not description_html and not code_snippets %}active{% endif %}" data-tab="exercises" onclick="switchContentTab('exercises')">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="content-tab-icon">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                    </svg>
+                    <span>Exercises</span>
+                </button>
+                {% endif %}
+            </div>
+
+            <div class="content-tab-body">
+                <!-- TEXT TAB -->
+                {% if description_html %}
+                <div class="tab-panel active" data-panel="text">
+                    <section class="mb-12">
+                        <div class="markdown-content notebook-wrapper">
+                            {{ description_html|safe }}
+                        </div>
+                    </section>
+
+                    <!-- References in text tab -->
+                    {% if youtube_videos or blog_links %}
+                    <section class="mb-12">
+                        <h2 class="text-xl font-semibold text-text-primary mb-4 pb-3 border-b border-border">References</h2>
+
+                        {% if youtube_videos %}
+                        {% for video in youtube_videos %}
+                        <div class="bg-bg-card border border-border rounded-lg p-4 mb-4">
+                            {% if video.title %}
+                            <h3 class="font-semibold text-text-primary mb-3">{{ video.title }}</h3>
+                            {% endif %}
+                            <div class="relative w-full" style="padding-bottom: 56.25%;">
+                                <iframe src="{{ video.url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="absolute top-0 left-0 w-full h-full rounded"></iframe>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+
+                        {% if blog_links %}
+                        <div class="mt-4">
+                            <h3 class="font-semibold text-text-primary mb-3 text-lg">External Resources</h3>
+                            {% for link in blog_links %}
+                            <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="block bg-bg-card border border-border rounded-lg p-4 mb-3 hover:border-accent transition-colors">
+                                <span class="text-sm text-text-secondary">🔗 Blog</span>
+                                <div class="font-medium text-text-primary mt-1">{{ link.title or 'External Resource' }}</div>
+                                <div class="text-sm text-text-tertiary mt-1 truncate">{{ link.url }}</div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </section>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- CODE TAB -->
+                {% if code_snippets %}
+                <div class="tab-panel {% if not description_html %}active{% endif %}" data-panel="code">
+                    <h2 class="text-xl font-semibold text-text-primary mb-4">Code Solutions</h2>
+
+                    <div class="code-tabs-container">
+                        <div class="code-tabs">
+                            {% for code in code_snippets %}
+                            <button class="code-tab {% if loop.index == 1 %}active{% endif %}" onclick="switchCodeTab({{ loop.index - 1 }})" data-tab-index="{{ loop.index - 1 }}">
+                                <span class="code-tab-title">{{ code.title or 'Solution ' ~ loop.index }}</span>
+                                <span class="code-tab-language">{{ code.url or 'code' }}</span>
+                            </button>
+                            {% endfor %}
+                        </div>
+
+                        <div class="code-content-container">
+                            {% for code in code_snippets %}
+                            <div class="code-content {% if loop.index == 1 %}active{% endif %}" data-code-index="{{ loop.index - 1 }}">
+                                <div class="code-header">
+                                    <span class="language-badge">{{ code.url or 'code' }}</span>
+                                    <button class="copy-code-btn" onclick="copyCode({{ loop.index - 1 }})" title="Copy code">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-icon">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                        <span class="copy-text">Copy</span>
+                                    </button>
+                                </div>
+                                <pre><code class="language-{{ code.url or 'python' }}">{{ code.content }}</code></pre>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- EXERCISES TAB -->
+                {% if exercises %}
+                <div class="tab-panel {% if not description_html and not code_snippets %}active{% endif %}" data-panel="exercises">
+                    <h2 class="text-xl font-semibold text-text-primary mb-4">Practice Exercises</h2>
+
+                    {% for exercise in exercises %}
+                    <div class="exercise-card" data-exercise-index="{{ loop.index - 1 }}">
+                        <div class="exercise-header">
+                            <h3 class="exercise-title">{{ exercise.title or 'Exercise ' ~ loop.index }}</h3>
+                            <span class="exercise-number">{{ loop.index }}/{{ exercises|length }}</span>
+                        </div>
+
+                        {% set parts = exercise.content.split('---SOLUTION---') %}
+
+                        <div class="exercise-question markdown-content">
+                            {{ parts[0]|safe if parts|length > 0 else exercise.content|safe }}
+                        </div>
+
+                        {% if parts|length > 1 %}
+                        <div class="exercise-solution-container">
+                            <button class="show-solution-btn" onclick="toggleSolution({{ loop.index - 1 }})">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="solution-icon">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                                <span class="solution-btn-text">Show Solution</span>
+                            </button>
+
+                            <div class="exercise-solution markdown-content" style="display: none;">
+                                {{ parts[1]|safe }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
                     {% endfor %}
                 </div>
                 {% endif %}
-            </section>
-            {% endif %}
+            </div>
         </div>
+        {% endif %}
 
-        <!-- CONTENT SECTIONS (for Classic, Horizontal, Focus layouts) -->
-        <!-- Order: Notes → Slides → Interactive → Description → References -->
-
+        <!-- FALLBACK: Old sections - show notes/slides OR plain description posts -->
+        {% if notes or slides or (description_html and not code_snippets and not exercises) %}
         <!-- 1. Handwritten Notes (PRIORITY) -->
         {% if notes %}
         <section class="section active" id="section-notes" data-section-id="notes">
@@ -415,6 +688,8 @@
             {% endif %}
         </section>
         {% endif %}
+        {% endif %}
+        <!-- End fallback sections -->
 
         </div><!-- /content-grid -->
     </div><!-- /content-wrapper -->

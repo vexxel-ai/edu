@@ -290,13 +290,14 @@ def create_post_from_data(
     section = section_slug_map[section_slug]
     subsection = subsection_key_map[subsection_key]
 
-    # Create post
+    # Create post (approved by default for seed data)
     post = Post(
         title=metadata["title"],
         slug=metadata["slug"],
         description=content,
         section_id=section.id,
         subsection_id=subsection.id,
+        is_approved=True,  # Seed data is pre-approved
     )
     session.add(post)
     session.commit()
